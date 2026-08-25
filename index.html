@@ -296,10 +296,18 @@
         ? `<a class="link-btn" target="_blank" href="https://maps.google.com/?q=${lat},${long}">${lat}, ${long}</a>` 
         : "N/A";
 
-      const photoUrl = item["Photo Link"] || "";
-      const photoCell = (photoUrl.startsWith("http")) 
-        ? `<a class="link-btn" target="_blank" href="${photoUrl}">View Photo</a>` 
-        : photoUrl;
+      // Automatically searches for any column containing the word "photo", "image", or "drive"
+const photoKey = Object.keys(item).find(k => /photo|image|drive/i.test(k));
+let rawPhotoUrl = (photoKey ? item[photoKey] : (item["Photo Link"] || "")).trim();
+
+// Strip leading single quote if present from spreadsheet formatting
+if (rawPhotoUrl.startsWith("'")) {
+  rawPhotoUrl = rawPhotoUrl.substring(1);
+}
+
+const photoCell = (rawPhotoUrl.startsWith("http://") || rawPhotoUrl.startsWith("https://")) 
+  ? `<a class="link-btn" target="_blank" href="${rawPhotoUrl}">View Photo</a>` 
+  : (rawPhotoUrl || "No Photo");
 
       tr.innerHTML = `
         <td>${item["Timestamp"] || ""}</td>
