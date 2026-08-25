@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Utility Field Data Portal</title>
+  <style>
+    :root {
+      --primary: #1e40af;
+      --primary-hover: #1d4ed8;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --badge-bg: #e0e7ff;
+      --badge-text: #3730a3;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 8px;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 20px;
+    }
+
+    .tab-btn {
+      padding: 10px 18px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Search Bar */
+    .search-box {
+      background: var(--card-bg);
+      padding: 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .search-input {
+      flex: 1;
+      min-width: 260px;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.95rem;
+      outline: none;
+    }
+
+    .search-input:focus {
+      border-color: var(--primary);
+    }
+
+    .btn {
+      padding: 10px 20px;
+      background-color: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: 0.2s;
+    }
+
+    .btn:hover {
+      background-color: var(--primary-hover);
+    }
+
+    /* Data Tables */
+    .table-container {
+      background: var(--card-bg);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      overflow-x: auto;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+
+    th, td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    th {
+      background-color: #f1f5f9;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.5px;
+    }
+
+    tr:hover {
+      background-color: #f8fafc;
+    }
+
+    .tag-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: var(--badge-bg);
+      color: var(--badge-text);
+    }
+
+    .link-btn {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .link-btn:hover {
+      text-decoration: underline;
+    }
+
+    /* Status Indicator */
+    #statusMessage {
+      margin-bottom: 16px;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>Field Data Management Portal</h1>
+  </header>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('searchTab')">Search Records</button>
+    <button class="tab-btn" onclick="switchTab('reportTab')">Daily Summary Reports</button>
+  </div>
+
+  <div id="statusMessage">Loading data from Google Sheet...</div>
+
+  <!-- TAB 1: SEARCH RECORDS -->
+  <div id="searchTab" class="tab-content active">
+    <div class="search-box">
+      <input 
+        type="text" 
+        id="searchInput" 
+        class="search-input" 
+        placeholder="Enter Consumer No (last 5 digits or full) or Meter No..."
+        onkeyup="handleSearch()"
+      >
+      <button class="btn" onclick="handleSearch()">Search</button>
+      <button class="btn" style="background:#64748b" onclick="resetSearch()">Reset</button>
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>Field Worker</th>
+            <th>Consumer No</th>
+            <th>Meter No</th>
+            <th>Reading</th>
+            <th>Tag</th>
+            <th>Meter Status</th>
+            <th>Coordinates</th>
+            <th>Remarks</th>
+            <th>Photo</th>
+          </tr>
+        </thead>
+        <tbody id="recordsTableBody">
+          <!-- Rows injected here -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TAB 2: SUMMARY REPORT -->
+  <div id="reportTab" class="tab-content">
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Field Worker</th>
+            <th>Total Reports Submitted</th>
+            <th>Resolved</th>
+            <th>Issues / Pending</th>
+          </tr>
+        </thead>
+        <tbody id="reportTableBody">
+          <!-- Summary rows injected here -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  // --- CONFIGURATION ---
+  const API_URL = "https://script.google.com/macros/s/AKfycbzk12YqqADRnNgKiRHRp0upCzsSjbsRHSz1e3ha4-zLyxD1x_giKw6SU2BplzlHxjA4/exec";
+  // ---------------------
+
+  let rawRecords = [];
+
+  // Fetch sheet records
+  async function loadSheetData() {
+    const status = document.getElementById("statusMessage");
+    try {
+      const response = await fetch(API_URL);
+      rawRecords = await response.json();
+      status.textContent = `Loaded ${rawRecords.length} records successfully.`;
+      renderTable(rawRecords);
+      generateSummaryReport(rawRecords);
+    } catch (err) {
+      status.textContent = "Failed to load records. Check API URL and permissions.";
+      console.error(err);
+    }
+  }
+
+  // Render search results
+  function renderTable(data) {
+    const tbody = document.getElementById("recordsTableBody");
+    tbody.innerHTML = "";
+
+    if (!data || data.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="10" style="text-align:center; padding: 20px;">No matching records found.</td></tr>`;
+      return;
+    }
+
+    data.forEach(item => {
+      const tr = document.createElement("tr");
+      
+      const lat = item["Latitude"] || "";
+      const long = item["Longitude"] || "";
+      const coords = (lat && lat !== "N/A" && long && long !== "N/A") 
+        ? `<a class="link-btn" target="_blank" href="https://maps.google.com/?q=${lat},${long}">${lat}, ${long}</a>` 
+        : "N/A";
+
+      const photoUrl = item["Photo Link"] || "";
+      const photoCell = (photoUrl.startsWith("http")) 
+        ? `<a class="link-btn" target="_blank" href="${photoUrl}">View Photo</a>` 
+        : photoUrl;
+
+      tr.innerHTML = `
+        <td>${item["Timestamp"] || ""}</td>
+        <td><strong>${item["Field Worker"] || "Unknown"}</strong></td>
+        <td>${item["Consumer No"] || "N/A"}</td>
+        <td>${item["Meter No"] || "N/A"}</td>
+        <td>${item["Reading"] || "N/A"}</td>
+        <td><span class="tag-badge">${item["Tag"] || "N/A"}</span></td>
+        <td>${item["Meter Status"] || "N/A"}</td>
+        <td>${coords}</td>
+        <td style="max-width: 250px; white-space: normal;">${item["Remarks (Refined)"] || item["Remarks"] || ""}</td>
+        <td>${photoCell}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  // Filter records by Consumer No (last 5 or full) or Meter No
+  function handleSearch() {
+    const query = document.getElementById("searchInput").value.trim().toLowerCase();
+    if (!query) {
+      renderTable(rawRecords);
+      return;
+    }
+
+    const filtered = rawRecords.filter(item => {
+      const consumer = (item["Consumer No"] || "").toLowerCase();
+      const meter = (item["Meter No"] || "").toLowerCase();
+      
+      // Match full or partial meter no, or exact substring of consumer no (including last 5 digits)
+      return consumer.includes(query) || meter.includes(query);
+    });
+
+    renderTable(filtered);
+  }
+
+  function resetSearch() {
+    document.getElementById("searchInput").value = "";
+    renderTable(rawRecords);
+  }
+
+  // Generate Date-wise & Worker-wise summary
+  function generateSummaryReport(data) {
+    const tbody = document.getElementById("reportTableBody");
+    tbody.innerHTML = "";
+
+    const summary = {};
+
+    data.forEach(row => {
+      const rawDate = (row["Timestamp"] || "").split(" ")[0] || "Unknown Date";
+      const worker = row["Field Worker"] || "Unknown Worker";
+      const key = `${rawDate}___${worker}`;
+
+      if (!summary[key]) {
+        summary[key] = { date: rawDate, worker: worker, total: 0, resolved: 0, pending: 0 };
+      }
+
+      summary[key].total += 1;
+      const tag = (row["Tag"] || "").toLowerCase();
+      if (tag === "resolved") {
+        summary[key].resolved += 1;
+      } else {
+        summary[key].pending += 1;
+      }
+    });
+
+    Object.values(summary).forEach(stat => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><strong>${stat.date}</strong></td>
+        <td>${stat.worker}</td>
+        <td><strong>${stat.total}</strong></td>
+        <td style="color: #16a34a; font-weight:600;">${stat.resolved}</td>
+        <td style="color: #dc2626; font-weight:600;">${stat.pending}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  // Switch between tabs
+  function switchTab(tabId) {
+    document.querySelectorAll(".tab-content").forEach(el => el.classList.remove("active"));
+    document.querySelectorAll(".tab-btn").forEach(el => el.classList.remove("active"));
+
+    document.getElementById(tabId).classList.add("active");
+    event.target.classList.add("active");
+  }
+
+  // Initialize on load
+  window.addEventListener("DOMContentLoaded", loadSheetData);
+</script>
+
+</body>
+</html>
