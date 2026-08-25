@@ -288,6 +288,7 @@
     }
 
     data.forEach(item => {
+      console.log("Row Data:", item);
       const tr = document.createElement("tr");
       
       const lat = item["Latitude"] || item["Lat"] || "";
