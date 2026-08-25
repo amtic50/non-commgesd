@@ -277,7 +277,7 @@
     }
   }
 
-  // Render search results
+ // Render search results
   function renderTable(data) {
     const tbody = document.getElementById("recordsTableBody");
     tbody.innerHTML = "";
@@ -290,12 +290,39 @@
     data.forEach(item => {
       const tr = document.createElement("tr");
       
-      const lat = item["Latitude"] || "";
-      const long = item["Longitude"] || "";
+      // Look for the Coordinates
+      const lat = item["Latitude"] || item["Lat"] || "";
+      const long = item["Longitude"] || item["Long"] || "";
       const coords = (lat && lat !== "N/A" && long && long !== "N/A") 
         ? `<a class="link-btn" target="_blank" href="https://maps.google.com/?q=${lat},${long}">${lat}, ${long}</a>` 
         : "N/A";
 
+      // SMART PHOTO FINDER: Looks for any column header containing "photo", "image", "link", or "url"
+      const photoKey = Object.keys(item).find(k => /photo|image|link|url/i.test(k));
+      let photoUrl = (photoKey ? item[photoKey] : "").toString().trim();
+      
+      // Clean up the URL if Sheets added a formatting quote
+      if (photoUrl.startsWith("'")) photoUrl = photoUrl.substring(1);
+
+      const photoCell = (photoUrl.startsWith("http")) 
+        ? `<a class="link-btn" target="_blank" href="${photoUrl}">View Photo</a>` 
+        : (photoUrl || "N/A");
+
+      tr.innerHTML = `
+        <td>${item["Timestamp"] || ""}</td>
+        <td><strong>${item["Field Worker"] || "Unknown"}</strong></td>
+        <td>${item["Consumer No"] || "N/A"}</td>
+        <td>${item["Meter No"] || "N/A"}</td>
+        <td>${item["Reading"] || "N/A"}</td>
+        <td><span class="tag-badge">${item["Tag"] || "N/A"}</span></td>
+        <td>${item["Meter Status"] || "N/A"}</td>
+        <td>${coords}</td>
+        <td style="max-width: 250px; white-space: normal;">${item["Remarks (Refined)"] || item["Remarks"] || ""}</td>
+        <td>${photoCell}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
       // Automatically searches for any column containing the word "photo", "image", or "drive"
 const photoKey = Object.keys(item).find(k => /photo|image|drive/i.test(k));
 let rawPhotoUrl = (photoKey ? item[photoKey] : (item["Photo Link"] || "")).trim();
