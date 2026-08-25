@@ -297,7 +297,8 @@
         : "N/A";
 
       const photoKey = Object.keys(item).find(k => /photo|image|link|url/i.test(k));
-      let photoUrl = (photoKey ? item[photoKey] : "").toString().trim();
+     // EXPLICIT PHOTO FINDER: Strictly looks for the "Photo Link" column
+      let photoUrl = (item["Photo Link"] || "").toString().trim();
       
       if (photoUrl.startsWith("'")) photoUrl = photoUrl.substring(1);
 
