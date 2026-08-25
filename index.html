@@ -277,7 +277,7 @@
     }
   }
 
- // Render search results
+  // Render search results
   function renderTable(data) {
     const tbody = document.getElementById("recordsTableBody");
     tbody.innerHTML = "";
@@ -290,18 +290,15 @@
     data.forEach(item => {
       const tr = document.createElement("tr");
       
-      // Look for the Coordinates
       const lat = item["Latitude"] || item["Lat"] || "";
       const long = item["Longitude"] || item["Long"] || "";
       const coords = (lat && lat !== "N/A" && long && long !== "N/A") 
         ? `<a class="link-btn" target="_blank" href="https://maps.google.com/?q=${lat},${long}">${lat}, ${long}</a>` 
         : "N/A";
 
-      // SMART PHOTO FINDER: Looks for any column header containing "photo", "image", "link", or "url"
       const photoKey = Object.keys(item).find(k => /photo|image|link|url/i.test(k));
       let photoUrl = (photoKey ? item[photoKey] : "").toString().trim();
       
-      // Clean up the URL if Sheets added a formatting quote
       if (photoUrl.startsWith("'")) photoUrl = photoUrl.substring(1);
 
       const photoCell = (photoUrl.startsWith("http")) 
@@ -323,36 +320,8 @@
       tbody.appendChild(tr);
     });
   }
-      // Automatically searches for any column containing the word "photo", "image", or "drive"
-const photoKey = Object.keys(item).find(k => /photo|image|drive/i.test(k));
-let rawPhotoUrl = (photoKey ? item[photoKey] : (item["Photo Link"] || "")).trim();
 
-// Strip leading single quote if present from spreadsheet formatting
-if (rawPhotoUrl.startsWith("'")) {
-  rawPhotoUrl = rawPhotoUrl.substring(1);
-}
-
-const photoCell = (rawPhotoUrl.startsWith("http://") || rawPhotoUrl.startsWith("https://")) 
-  ? `<a class="link-btn" target="_blank" href="${rawPhotoUrl}">View Photo</a>` 
-  : (rawPhotoUrl || "No Photo");
-
-      tr.innerHTML = `
-        <td>${item["Timestamp"] || ""}</td>
-        <td><strong>${item["Field Worker"] || "Unknown"}</strong></td>
-        <td>${item["Consumer No"] || "N/A"}</td>
-        <td>${item["Meter No"] || "N/A"}</td>
-        <td>${item["Reading"] || "N/A"}</td>
-        <td><span class="tag-badge">${item["Tag"] || "N/A"}</span></td>
-        <td>${item["Meter Status"] || "N/A"}</td>
-        <td>${coords}</td>
-        <td style="max-width: 250px; white-space: normal;">${item["Remarks (Refined)"] || item["Remarks"] || ""}</td>
-        <td>${photoCell}</td>
-      `;
-      tbody.appendChild(tr);
-    });
-  }
-
-  // Filter records by Consumer No (last 5 or full) or Meter No
+  // Filter records
   function handleSearch() {
     const query = document.getElementById("searchInput").value.trim().toLowerCase();
     if (!query) {
@@ -363,8 +332,6 @@ const photoCell = (rawPhotoUrl.startsWith("http://") || rawPhotoUrl.startsWith("
     const filtered = rawRecords.filter(item => {
       const consumer = (item["Consumer No"] || "").toLowerCase();
       const meter = (item["Meter No"] || "").toLowerCase();
-      
-      // Match full or partial meter no, or exact substring of consumer no (including last 5 digits)
       return consumer.includes(query) || meter.includes(query);
     });
 
@@ -376,7 +343,7 @@ const photoCell = (rawPhotoUrl.startsWith("http://") || rawPhotoUrl.startsWith("
     renderTable(rawRecords);
   }
 
-  // Generate Date-wise & Worker-wise summary
+  // Generate Summary
   function generateSummaryReport(data) {
     const tbody = document.getElementById("reportTableBody");
     tbody.innerHTML = "";
@@ -414,7 +381,7 @@ const photoCell = (rawPhotoUrl.startsWith("http://") || rawPhotoUrl.startsWith("
     });
   }
 
-  // Switch between tabs
+  // Switch tabs
   function switchTab(tabId) {
     document.querySelectorAll(".tab-content").forEach(el => el.classList.remove("active"));
     document.querySelectorAll(".tab-btn").forEach(el => el.classList.remove("active"));
@@ -423,7 +390,6 @@ const photoCell = (rawPhotoUrl.startsWith("http://") || rawPhotoUrl.startsWith("
     event.target.classList.add("active");
   }
 
-  // Initialize on load
   window.addEventListener("DOMContentLoaded", loadSheetData);
 </script>
 
