@@ -4,17 +4,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Utility Field Data Portal</title>
+  
+  <!-- html2canvas Library for taking the screenshot -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
   <style>
     :root {
       --primary: #1e40af;
       --primary-hover: #1d4ed8;
       --bg: #f8fafc;
       --card-bg: #ffffff;
-      --border: #e2e8f0;
+      --border: #000000; /* Darker border for the Excel look */
       --text: #0f172a;
-      --text-muted: #64748b;
-      --badge-bg: #e0e7ff;
-      --badge-text: #3730a3;
+      --text-muted: #475569;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
@@ -23,47 +25,70 @@
     header { margin-bottom: 24px; }
     h1 { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
 
-    /* Tabs */
-    .tabs { display: flex; gap: 8px; border-bottom: 2px solid var(--border); margin-bottom: 20px; flex-wrap: wrap; }
+    .tabs { display: flex; gap: 8px; border-bottom: 2px solid #e2e8f0; margin-bottom: 20px; flex-wrap: wrap; }
     .tab-btn { padding: 10px 18px; border: none; background: none; cursor: pointer; font-size: 0.95rem; font-weight: 600; color: var(--text-muted); border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all 0.2s; }
     .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
     .tab-content { display: none; }
     .tab-content.active { display: block; }
 
-    /* Search & Filters */
-    .filter-box { background: var(--card-bg); padding: 16px; border-radius: 8px; border: 1px solid var(--border); display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
-    .filter-input { flex: 1; min-width: 200px; padding: 10px 14px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.95rem; outline: none; }
-    .filter-input:focus { border-color: var(--primary); }
+    .filter-box { background: var(--card-bg); padding: 16px; border-radius: 8px; border: 1px solid #e2e8f0; display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+    .filter-input { flex: 1; min-width: 200px; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 0.95rem; outline: none; }
     .btn { padding: 10px 20px; background-color: var(--primary); color: #fff; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: 0.2s; white-space: nowrap; }
     .btn:hover { background-color: var(--primary-hover); }
+    .btn-export { background-color: #16a34a; }
+    .btn-export:hover { background-color: #15803d; }
 
-    /* Data Tables (Mobile Friendly) */
-    .table-container { background: var(--card-bg); border-radius: 8px; border: 1px solid var(--border); overflow-x: auto; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; }
-    th, td { padding: 10px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; }
-    th { background-color: #f1f5f9; color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; }
-    tr:hover { background-color: #f8fafc; }
+    .table-container { overflow-x: auto; margin-bottom: 20px; }
     
-    .remark-cell { max-width: 200px; white-space: normal; min-width: 150px; }
-    .tag-badge { display: inline-block; padding: 3px 8px; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; background: var(--badge-bg); color: var(--badge-text); }
-    .link-btn { color: var(--primary); text-decoration: none; font-weight: 600; }
-    .link-btn:hover { text-decoration: underline; }
-
-    /* Pivot Report Specific Styles */
-    .pivot-table th, .pivot-table td { border: 1px solid var(--border); text-align: center; }
-    .pivot-table td { color: var(--primary); }
-    .pivot-table th.row-label { text-align: left; writing-mode: horizontal-tb; transform: none; white-space: nowrap; }
-    .pivot-table th.vert-header { writing-mode: vertical-rl; transform: rotate(180deg); height: 180px; padding: 10px 4px; text-align: left; vertical-align: middle; }
-    .pivot-table .grand-total { font-weight: 700; background-color: #f1f5f9; color: var(--text); }
-    .pivot-table tr:last-child td { font-weight: 700; background-color: #f1f5f9; color: var(--text); }
-
-    #statusMessage { margin-bottom: 16px; font-size: 0.9rem; color: var(--text-muted); font-weight: 600; }
-
-    /* Mobile Adjustments */
-    @media (max-width: 768px) {
-      .tab-btn { flex: 1; text-align: center; padding: 10px 8px; font-size: 0.85rem; }
-      th, td { padding: 8px; }
+    /* SEARCH TABLE STYLES */
+    .search-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; background: var(--card-bg); }
+    .search-table th, .search-table td { padding: 10px 12px; border: 1px solid #e2e8f0; white-space: nowrap; }
+    .search-table th { background-color: #f1f5f9; color: var(--text-muted); font-weight: 600; }
+    
+    /* PIVOT REPORT TABLE STYLES (Excel Look) */
+    #pivotTableContainer {
+      display: inline-block; /* Keeps the screenshot tightly wrapped around the table */
+      background: #fff;
+      padding: 10px;
+      border-radius: 4px;
     }
+    .pivot-table { 
+      border-collapse: collapse; 
+      text-align: center; 
+      font-size: 0.85rem;
+      border: 2px solid var(--border);
+    }
+    .pivot-table th, .pivot-table td { 
+      border: 1px solid var(--border); 
+      padding: 6px 8px; /* Tighter padding for smaller footprint */
+      color: var(--text);
+    }
+    .pivot-table td { 
+      font-weight: 800; /* Bold numbers */
+      font-size: 0.95rem;
+    }
+    .pivot-table th.row-label { 
+      text-align: left; 
+      white-space: nowrap; 
+      font-weight: 700;
+      background-color: #f8fafc;
+    }
+    .pivot-table th.vert-header { 
+      writing-mode: vertical-rl; 
+      transform: rotate(180deg); 
+      height: 160px; 
+      padding: 10px 4px; 
+      text-align: left; 
+      vertical-align: middle; 
+      font-weight: 600;
+      background-color: #f8fafc;
+    }
+    .pivot-table .grand-total { 
+      font-weight: 800; 
+      background-color: #f1f5f9; 
+    }
+    
+    #statusMessage { margin-bottom: 16px; font-size: 0.9rem; color: var(--text-muted); font-weight: 600; }
   </style>
 </head>
 <body>
@@ -89,7 +114,7 @@
     </div>
 
     <div class="table-container">
-      <table>
+      <table class="search-table">
         <thead>
           <tr>
             <th>Timestamp</th>
@@ -98,15 +123,11 @@
             <th>Meter No</th>
             <th>Reading</th>
             <th>Tag</th>
-            <th>Coordinates</th>
             <th>Original Remarks</th>
             <th>Refined Remarks</th>
-            <th>Photo</th>
           </tr>
         </thead>
-        <tbody id="recordsTableBody">
-          <!-- Rows injected here -->
-        </tbody>
+        <tbody id="recordsTableBody"></tbody>
       </table>
     </div>
   </div>
@@ -114,31 +135,37 @@
   <!-- TAB 2: SUMMARY REPORT -->
   <div id="reportTab" class="tab-content">
     <div class="filter-box">
-      <label style="font-weight: 600; color: var(--text-muted);">Filter by Date:</label>
+      <label style="font-weight: 600; color: var(--text-muted);">Filter Date:</label>
       <input type="date" id="reportDate" class="filter-input" onchange="generateSummaryReport()">
-      <button class="btn" style="background:#64748b" onclick="document.getElementById('reportDate').value=''; generateSummaryReport();">Clear Date</button>
+      <button class="btn" style="background:#64748b" onclick="document.getElementById('reportDate').value=''; generateSummaryReport();">Clear</button>
+      
+      <!-- Export Buttons -->
+      <button class="btn btn-export" onclick="exportToCSV()" style="margin-left: auto;">📊 Export Excel</button>
+      <button class="btn" onclick="downloadScreenshot()">📸 Download Image</button>
     </div>
 
     <div class="table-container">
-      <table class="pivot-table">
-        <thead>
-          <tr>
-            <th class="row-label">Row Labels</th>
-            <th class="vert-header">Defective Meter /<br>NIC Issue / Display Damage</th>
-            <th class="vert-header">DTR Damaged /<br>LT Line Issue</th>
-            <th class="vert-header">Meter By Passed</th>
-            <th class="vert-header">Meter Not<br>Installed / Swapping</th>
-            <th class="vert-header">Not Found</th>
-            <th class="vert-header">Resolved</th>
-            <th class="vert-header">TDC / Service<br>Cable Issue</th>
-            <th class="vert-header">Vacant Premise /<br>Door Locked</th>
-            <th class="vert-header grand-total">Grand Total</th>
-          </tr>
-        </thead>
-        <tbody id="reportTableBody">
-          <!-- Summary rows injected here -->
-        </tbody>
-      </table>
+      <div id="pivotTableContainer">
+        <table class="pivot-table" id="pivotTable">
+          <thead>
+            <tr>
+              <th class="row-label" style="text-align: center; font-weight: 800;">Row Labels</th>
+              <th class="vert-header">Defective Meter /<br>NIC Issue / Display Damage</th>
+              <th class="vert-header">DTR Damaged /<br>LT Line Issue</th>
+              <th class="vert-header">Meter By Passed</th>
+              <th class="vert-header">Meter Not<br>Installed / Swapping</th>
+              <th class="vert-header">Not Found</th>
+              <th class="vert-header">Resolved</th>
+              <th class="vert-header">TDC / Service<br>Cable Issue</th>
+              <th class="vert-header">Vacant Premise /<br>Door Locked</th>
+              <th class="vert-header grand-total">Grand Total</th>
+            </tr>
+          </thead>
+          <tbody id="reportTableBody">
+            <!-- Summary rows injected here -->
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </div>
@@ -150,7 +177,6 @@
 
   let rawRecords = [];
 
-  // Team Leader Mapping Logic based on the provided duty roster
   const teamMapping = {
     "sofior rahman": "Abdul Monnaf",
     "sofior lineman": "Abdul Monnaf",
@@ -164,7 +190,7 @@
     "tarun borgohain": "Ajit Das",
     "kashem ali": "Nikuraj Deka",
     "sofiqul islam": "Niren Ch. Rabha",
-    "sofikul islam": "Niren Ch. Rabha" // Catching spelling variations
+    "sofikul islam": "Niren Ch. Rabha" 
   };
 
   const tagCategories = [
@@ -184,15 +210,21 @@
     return teamMapping[cleanName] || workerName; 
   }
 
-  // Fetch sheet records
+  // Gets darker blue as the number gets higher
+  function getColor(value) {
+    if (value === 0) return "transparent";
+    if (value <= 2) return "#e0f2fe"; // Lightest blue
+    if (value <= 5) return "#bae6fd";
+    if (value <= 9) return "#7dd3fc";
+    return "#38bdf8"; // Darkest blue for 10+
+  }
+
   async function loadSheetData() {
     const status = document.getElementById("statusMessage");
     try {
       const response = await fetch(API_URL);
       rawRecords = await response.json();
       status.textContent = `Loaded ${rawRecords.length} records successfully.`;
-      
-      // Set default date to today for the report
       document.getElementById('reportDate').value = new Date().toISOString().split('T')[0];
       
       renderTable(rawRecords);
@@ -203,68 +235,27 @@
     }
   }
 
-  // Render Data Table
   function renderTable(data) {
     const tbody = document.getElementById("recordsTableBody");
     tbody.innerHTML = "";
-
-    if (!data || data.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="10" style="text-align:center; padding: 20px;">No matching records found.</td></tr>`;
-      return;
-    }
+    if (!data || data.length === 0) return;
 
     data.forEach(item => {
       const tr = document.createElement("tr");
-      
-      const lat = item["Latitude"] || item["Lat"] || "";
-      const long = item["Longitude"] || item["Long"] || "";
-      const coords = (lat && lat !== "N/A" && long && long !== "N/A") 
-        ? `<a class="link-btn" target="_blank" href="https://maps.google.com/?q=${lat},${long}">${lat}, ${long}</a>` 
-        : "N/A";
-
-      const photoKey = Object.keys(item).find(k => /photo|image|link|url/i.test(k));
-      let photoUrl = (photoKey ? item[photoKey] : "").toString().trim();
-      if (photoUrl.startsWith("'")) photoUrl = photoUrl.substring(1);
-
-      const photoCell = (photoUrl.startsWith("http")) 
-        ? `<a class="link-btn" target="_blank" href="${photoUrl}">View Photo</a>` 
-        : (photoUrl || "N/A");
-
       tr.innerHTML = `
         <td>${item["Timestamp"] || ""}</td>
         <td><strong>${item["Field Worker"] || "Unknown"}</strong></td>
         <td>${item["Consumer No"] || "N/A"}</td>
         <td>${item["Meter No"] || "N/A"}</td>
         <td>${item["Reading"] || "N/A"}</td>
-        <td><span class="tag-badge">${item["Tag"] || "N/A"}</span></td>
-        <td>${coords}</td>
-        <td class="remark-cell">${item["Remarks (Original)"] || item["Remarks"] || ""}</td>
-        <td class="remark-cell">${item["Remarks (Refined)"] || ""}</td>
-        <td>${photoCell}</td>
+        <td>${item["Tag"] || "N/A"}</td>
+        <td style="max-width:200px; white-space:normal;">${item["Remarks (Original)"] || item["Remarks"] || ""}</td>
+        <td style="max-width:200px; white-space:normal;">${item["Remarks (Refined)"] || ""}</td>
       `;
       tbody.appendChild(tr);
     });
   }
 
-  // Filter Data Table
-  function handleSearch() {
-    const query = document.getElementById("searchInput").value.trim().toLowerCase();
-    if (!query) {
-      renderTable(rawRecords);
-      return;
-    }
-    const filtered = rawRecords.filter(item => {
-      return Object.values(item).some(val => String(val).toLowerCase().includes(query));
-    });
-    renderTable(filtered);
-  }
-
-  function resetSearch() {
-    document.getElementById("searchInput").value = "";
-    renderTable(rawRecords);
-  }
-
-  // Generate Pivot Report
   function generateSummaryReport() {
     const tbody = document.getElementById("reportTableBody");
     tbody.innerHTML = "";
@@ -288,9 +279,9 @@
         summary[leader] = {};
         tagCategories.forEach(cat => summary[leader][cat] = 0);
         summary[leader].total = 0;
+        summary[leader].name = leader;
       }
 
-      // Map the tag to the exact column name to handle minor spelling differences
       const matchedCategory = tagCategories.find(cat => cat.toLowerCase() === tag.toLowerCase());
       if (matchedCategory) {
         summary[leader][matchedCategory] += 1;
@@ -298,34 +289,37 @@
       }
     });
 
-    // Render Rows
-    Object.keys(summary).sort().forEach(leader => {
-      if (summary[leader].total === 0) return; // Skip if no data for date
+    // Convert object to array and SORT BY PERFORMANCE (Total Descending)
+    const sortedLeaders = Object.values(summary).sort((a, b) => b.total - a.total);
+
+    sortedLeaders.forEach(data => {
+      if (data.total === 0) return; 
 
       const tr = document.createElement("tr");
-      let rowHtml = `<td class="row-label">${leader}</td>`;
+      let rowHtml = `<th class="row-label">${data.name}</th>`;
       
       tagCategories.forEach((cat, index) => {
-        const count = summary[leader][cat];
+        const count = data[cat];
         columnTotals[index] += count;
-        rowHtml += `<td>${count > 0 ? count : ""}</td>`;
+        // Apply color mapping
+        const bgColor = getColor(count);
+        rowHtml += `<td style="background-color: ${bgColor};">${count > 0 ? count : ""}</td>`;
       });
       
-      absoluteGrandTotal += summary[leader].total;
-      rowHtml += `<td class="grand-total">${summary[leader].total}</td>`;
+      absoluteGrandTotal += data.total;
+      rowHtml += `<td class="grand-total">${data.total}</td>`;
       
       tr.innerHTML = rowHtml;
       tbody.appendChild(tr);
     });
 
-    // Render Grand Total Row
     if (absoluteGrandTotal > 0) {
       const footerTr = document.createElement("tr");
-      let footerHtml = `<td class="row-label grand-total">Grand Total</td>`;
+      let footerHtml = `<th class="row-label grand-total">Grand Total</th>`;
       columnTotals.forEach(total => {
-        footerHtml += `<td>${total > 0 ? total : ""}</td>`;
+        footerHtml += `<td class="grand-total">${total > 0 ? total : ""}</td>`;
       });
-      footerHtml += `<td>${absoluteGrandTotal}</td>`;
+      footerHtml += `<td class="grand-total">${absoluteGrandTotal}</td>`;
       footerTr.innerHTML = footerHtml;
       tbody.appendChild(footerTr);
     } else {
@@ -333,7 +327,56 @@
     }
   }
 
-  // Switch tabs
+  // Export to Excel (CSV)
+  function exportToCSV() {
+    let table = document.getElementById("pivotTable");
+    let rows = table.querySelectorAll("tr");
+    let csv = [];
+    
+    for (let i = 0; i < rows.length; i++) {
+      let row = [], cols = rows[i].querySelectorAll("td, th");
+      for (let j = 0; j < cols.length; j++) {
+         // Replace newlines inside vertical headers to keep them on one cell
+         let data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, " ").trim();
+         row.push('"' + data + '"');
+      }
+      csv.push(row.join(","));
+    }
+    
+    let csvFile = new Blob([csv.join("\n")], {type: "text/csv"});
+    let a = document.createElement("a");
+    a.download = `Daily_Pivot_Report_${document.getElementById("reportDate").value || 'All_Time'}.csv`;
+    a.href = window.URL.createObjectURL(csvFile);
+    a.click();
+  }
+
+  // Snap Screenshot
+  function downloadScreenshot() {
+    const tableContainer = document.getElementById("pivotTableContainer");
+    
+    // Uses html2canvas to draw the DOM element to an image
+    html2canvas(tableContainer, { backgroundColor: "#ffffff" }).then(canvas => {
+      let a = document.createElement("a");
+      a.download = `Report_Snap_${document.getElementById("reportDate").value || 'All_Time'}.png`;
+      a.href = canvas.toDataURL("image/png");
+      a.click();
+    });
+  }
+
+  function handleSearch() {
+    const query = document.getElementById("searchInput").value.trim().toLowerCase();
+    if (!query) { renderTable(rawRecords); return; }
+    const filtered = rawRecords.filter(item => {
+      return Object.values(item).some(val => String(val).toLowerCase().includes(query));
+    });
+    renderTable(filtered);
+  }
+
+  function resetSearch() {
+    document.getElementById("searchInput").value = "";
+    renderTable(rawRecords);
+  }
+
   function switchTab(tabId) {
     document.querySelectorAll(".tab-content").forEach(el => el.classList.remove("active"));
     document.querySelectorAll(".tab-btn").forEach(el => el.classList.remove("active"));
