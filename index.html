@@ -48,7 +48,7 @@
     .link-btn:hover { text-decoration: underline; }
     
     /* PIVOT REPORT TABLE STYLES */
-    #pivotTableContainer {
+    .pivot-wrap {
       display: inline-block;
       background: #ffffff;
       padding: 16px;
@@ -151,33 +151,34 @@
       <label style="font-weight: 600; color: var(--text-muted);">Filter Date:</label>
       <input type="date" id="reportDate" class="filter-input" onchange="generateSummaryReport()">
       <button class="btn" style="background:#64748b" onclick="document.getElementById('reportDate').value=''; generateSummaryReport();">Clear</button>
-      
-      <button class="btn btn-export" onclick="exportToCSV()" style="margin-left: auto;">📊 Export Excel</button>
-      <button class="btn" onclick="downloadScreenshot()">📸 Download Image</button>
     </div>
 
+    <h2 style="font-size: 1.1rem; color: var(--primary); margin-bottom: 12px;">No-Comm Checking Report</h2>
     <div class="table-container">
-      <div id="pivotTableContainer">
-        <table class="pivot-table" id="pivotTable">
-          <thead>
-            <tr>
-              <th class="row-label" style="text-align: center; font-size: 1rem; color: var(--primary);">No-comm Team leader</th>
-              <th class="col-header">Defective Meter / NIC Issue / Display Damage</th>
-              <th class="col-header">DTR Damaged / LT Line Issue</th>
-              <th class="col-header">Meter By Passed</th>
-              <th class="col-header">Meter Not Installed / Swapping</th>
-              <th class="col-header">Not Found</th>
-              <th class="col-header">Resolved</th>
-              <th class="col-header">TDC / Service Cable Issue</th>
-              <th class="col-header">Vacant Premise / Door Locked</th>
-              <th class="col-header grand-total" style="background-color: #94a3b8; color: #0f172a;">Grand Total</th>
-            </tr>
-          </thead>
-          <tbody id="reportTableBody">
-            <!-- Summary rows injected here -->
-          </tbody>
+      <div id="pivotTableContainerNoComm" class="pivot-wrap">
+        <table class="pivot-table" id="pivotTableNoComm">
+          <thead id="pivotHeadNoComm"></thead>
+          <tbody id="reportTableBodyNoComm"></tbody>
         </table>
       </div>
+    </div>
+    <div style="margin-bottom: 28px;">
+      <button class="btn btn-export" onclick="exportToCSV('pivotTableNoComm', 'NoComm')">📊 Export Excel</button>
+      <button class="btn" onclick="downloadScreenshot('pivotTableContainerNoComm', 'NoComm')">📸 Download Image</button>
+    </div>
+
+    <h2 style="font-size: 1.1rem; color: var(--primary); margin-bottom: 12px;">Negative Balance Checking Report</h2>
+    <div class="table-container">
+      <div id="pivotTableContainerNegBalance" class="pivot-wrap">
+        <table class="pivot-table" id="pivotTableNegBalance">
+          <thead id="pivotHeadNegBalance"></thead>
+          <tbody id="reportTableBodyNegBalance"></tbody>
+        </table>
+      </div>
+    </div>
+    <div>
+      <button class="btn btn-export" onclick="exportToCSV('pivotTableNegBalance', 'NegBalance')">📊 Export Excel</button>
+      <button class="btn" onclick="downloadScreenshot('pivotTableContainerNegBalance', 'NegBalance')">📸 Download Image</button>
     </div>
   </div>
 </div>
@@ -202,18 +203,27 @@
     "tarun borgohain": "Ajit Das",
     "kashem ali": "Nikuraj Deka",
     "sofiqul islam": "Niren Ch. Rabha",
-    "sofikul islam": "Niren Ch. Rabha" 
+    "sofikul islam": "Niren Ch. Rabha",
+    "family first and forever": "Gagan Das",
+    "dimbeswarbaishya": "Dimbeswar Baishya"
   };
 
-  const tagCategories = [
-    "Defective Meter / NIC Issue / Display Damage",
-    "DTR Damaged / LT Line Issue",
-    "Meter By Passed",
-    "Meter Not Installed / Swapping",
-    "Not Found",
-    "Resolved",
-    "TDC / Service Cable Issue",
-    "Vacant Premise / Door Locked"
+  // No-Comm Checking report: root causes found while chasing a non-communicating meter
+  const noCommTagCategories = [
+    "Meter working ok/Communication Issue",
+    "Meter display error",
+    "Meter/Terminal burnt",
+    "Meter number wrong",
+    "Service wire faulty",
+    "Meter inaccessible",
+    "Meter not found",
+    "Smart meter not installed"
+  ];
+
+  // Negative Balance Checking report: outcome of a suspicious-consumption / negative-balance check
+  const negBalanceTagCategories = [
+    "No malpractice found",
+    "Meter bypass found"
   ];
 
   function getTeamLeader(workerName) {
@@ -286,57 +296,74 @@
     });
   }
 
-  function generateSummaryReport() {
-    const tbody = document.getElementById("reportTableBody");
+  // Extracts just the date portion from a Timestamp value, whichever format it arrives in:
+  // "15/09/2026 16:10:46" (space-separated) or "2026-09-15T16:10:46.000Z" (ISO).
+  function extractDatePart(timestamp) {
+    if (!timestamp) return "";
+    if (timestamp.includes(" ")) return timestamp.split(" ")[0];
+    if (timestamp.includes("T")) return timestamp.split("T")[0];
+    return timestamp;
+  }
+
+  // Builds one pivot table (header + body) for a given set of tag categories.
+  // rowLabel is the header text for the leftmost column.
+  function buildPivotTable(headId, bodyId, categories, rowLabel) {
+    const thead = document.getElementById(headId);
+    const tbody = document.getElementById(bodyId);
+    thead.innerHTML = "";
     tbody.innerHTML = "";
-    
+
+    // Header row, built from the categories array so it never drifts out of sync with the data
+    let headHtml = `<tr><th class="row-label" style="text-align: center; font-size: 1rem; color: var(--primary);">${rowLabel}</th>`;
+    categories.forEach(cat => headHtml += `<th class="col-header">${cat}</th>`);
+    headHtml += `<th class="col-header grand-total" style="background-color: #94a3b8; color: #0f172a;">Grand Total</th></tr>`;
+    thead.innerHTML = headHtml;
+
     const filterDate = document.getElementById("reportDate").value;
     const summary = {};
-    const columnTotals = new Array(tagCategories.length).fill(0);
+    const columnTotals = new Array(categories.length).fill(0);
     let absoluteGrandTotal = 0;
 
     rawRecords.forEach(row => {
-      const timestamp = row["Timestamp"] || "";
-      const rowDate = timestamp.split(" ")[0] || timestamp.split("T")[0];
-      
+      const rowDate = extractDatePart(row["Timestamp"] || "");
       if (filterDate && rowDate !== filterDate) return;
+
+      const tag = (row["Tag"] || "").trim();
+      const matchedCategory = categories.find(cat => cat.toLowerCase() === tag.toLowerCase());
+      if (!matchedCategory) return; // this row doesn't belong to this report at all
 
       const rawWorker = row["Field Worker"] || "Unknown";
       const leader = getTeamLeader(rawWorker);
-      const tag = (row["Tag"] || "").trim();
 
       if (!summary[leader]) {
         summary[leader] = {};
-        tagCategories.forEach(cat => summary[leader][cat] = 0);
+        categories.forEach(cat => summary[leader][cat] = 0);
         summary[leader].total = 0;
         summary[leader].name = leader;
       }
 
-      const matchedCategory = tagCategories.find(cat => cat.toLowerCase() === tag.toLowerCase());
-      if (matchedCategory) {
-        summary[leader][matchedCategory] += 1;
-        summary[leader].total += 1;
-      }
+      summary[leader][matchedCategory] += 1;
+      summary[leader].total += 1;
     });
 
     const sortedLeaders = Object.values(summary).sort((a, b) => b.total - a.total);
 
     sortedLeaders.forEach(data => {
-      if (data.total === 0) return; 
+      if (data.total === 0) return;
 
       const tr = document.createElement("tr");
       let rowHtml = `<th class="row-label">${data.name}</th>`;
-      
-      tagCategories.forEach((cat, index) => {
+
+      categories.forEach((cat, index) => {
         const count = data[cat];
         columnTotals[index] += count;
         const style = getHeatmapStyle(count);
         rowHtml += `<td style="${style}">${count > 0 ? count : ""}</td>`;
       });
-      
+
       absoluteGrandTotal += data.total;
       rowHtml += `<td class="grand-total">${data.total}</td>`;
-      
+
       tr.innerHTML = rowHtml;
       tbody.appendChild(tr);
     });
@@ -351,12 +378,18 @@
       footerTr.innerHTML = footerHtml;
       tbody.appendChild(footerTr);
     } else {
-      tbody.innerHTML = `<tr><td colspan="10" style="text-align:center; padding: 20px;">No data for this date.</td></tr>`;
+      const colspan = categories.length + 2;
+      tbody.innerHTML = `<tr><td colspan="${colspan}" style="text-align:center; padding: 20px;">No data for this date.</td></tr>`;
     }
   }
 
-  function exportToCSV() {
-    let table = document.getElementById("pivotTable");
+  function generateSummaryReport() {
+    buildPivotTable("pivotHeadNoComm", "reportTableBodyNoComm", noCommTagCategories, "No-comm Team leader");
+    buildPivotTable("pivotHeadNegBalance", "reportTableBodyNegBalance", negBalanceTagCategories, "Negative Balance Team leader");
+  }
+
+  function exportToCSV(tableId, label) {
+    let table = document.getElementById(tableId);
     let rows = table.querySelectorAll("tr");
     let csv = [];
     
@@ -371,20 +404,20 @@
     
     let csvFile = new Blob([csv.join("\n")], {type: "text/csv"});
     let a = document.createElement("a");
-    a.download = `Daily_Pivot_Report_${document.getElementById("reportDate").value || 'All_Time'}.csv`;
+    a.download = `${label}_Pivot_Report_${document.getElementById("reportDate").value || 'All_Time'}.csv`;
     a.href = window.URL.createObjectURL(csvFile);
     a.click();
   }
 
-  function downloadScreenshot() {
-    const tableContainer = document.getElementById("pivotTableContainer");
+  function downloadScreenshot(containerId, label) {
+    const tableContainer = document.getElementById(containerId);
     
     html2canvas(tableContainer, { 
       backgroundColor: "#ffffff",
       scale: 2 
     }).then(canvas => {
       let a = document.createElement("a");
-      a.download = `Report_Snap_${document.getElementById("reportDate").value || 'All_Time'}.png`;
+      a.download = `${label}_Report_Snap_${document.getElementById("reportDate").value || 'All_Time'}.png`;
       a.href = canvas.toDataURL("image/png");
       a.click();
     });
