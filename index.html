@@ -1,117 +1,141 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="as" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Utility Field Data Portal</title>
 
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
   <style>
     :root {
-      --primary: #1e40af;
-      --primary-soft: #e0e7ff;
-      --primary-hover: #1d4ed8;
-      --bg: #f1f5f9;
-      --card-bg: #ffffff;
-      --border: #475569;
-      --line: #e2e8f0;
-      --text: #0f172a;
-      --text-muted: #64748b;
-      --green: #15803d;  --green-bg: #dcfce7;
-      --red: #b91c1c;    --red-bg: #fee2e2;
-      --amber: #b45309;  --amber-bg: #fef3c7;
-      --slate: #475569;  --slate-bg: #e2e8f0;
+      --primary: #60a5fa;
+      --primary-strong: #3b82f6;
+      --primary-soft: rgba(96,165,250,.16);
+      --bg: #0a1120;
+      --card-bg: #151f33;
+      --card-sub: rgba(255,255,255,.04);
+      --line: #26344f;
+      --text: #e8eefb;
+      --text-muted: #8fa0bb;
+      --field-bg: #0e182b;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.28);
+      --hdr-from: #0f1d44; --hdr-to: #1d3a8a;
+
+      --green: #4ade80;  --green-bg: rgba(34,197,94,.16);
+      --red: #f87171;    --red-bg: rgba(239,68,68,.18);
+      --amber: #fbbf24;  --amber-bg: rgba(245,158,11,.16);
+      --slate: #cbd5e1;  --slate-bg: rgba(148,163,184,.16);
+    }
+    :root[data-theme="light"] {
+      --primary: #1e40af; --primary-strong: #1d4ed8; --primary-soft: #e0e7ff;
+      --bg: #f1f5f9; --card-bg: #ffffff; --card-sub: #f8fafc; --line: #e2e8f0;
+      --text: #0f172a; --text-muted: #64748b; --field-bg: #ffffff;
       --shadow: 0 1px 2px rgba(15,23,42,.06), 0 4px 14px rgba(15,23,42,.06);
+      --hdr-from: #1e3a8a; --hdr-to: #2563eb;
+      --green: #15803d; --green-bg: #dcfce7;
+      --red: #b91c1c;   --red-bg: #fee2e2;
+      --amber: #b45309; --amber-bg: #fef3c7;
+      --slate: #475569; --slate-bg: #e2e8f0;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background: var(--bg); color: var(--text); }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Bengali", Roboto, sans-serif; }
+    body { background: var(--bg); color: var(--text); transition: background .2s; }
     .container { max-width: 1400px; margin: 0 auto; padding: 0 16px 40px; }
 
     /* Header */
-    .app-header { background: linear-gradient(135deg, #1e3a8a, #2563eb); color: #fff; padding: 20px 16px 64px; }
+    .app-header { background: linear-gradient(135deg, var(--hdr-from), var(--hdr-to)); color: #fff; padding: 20px 16px 64px; }
     .app-header .inner { max-width: 1400px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-    .app-header h1 { font-size: 1.4rem; font-weight: 700; letter-spacing: -.01em; }
+    .app-header h1 { font-size: 1.4rem; font-weight: 700; }
     .app-header p { font-size: .85rem; opacity: .8; margin-top: 2px; }
-    #statusMessage { font-size: .8rem; background: rgba(255,255,255,.15); padding: 6px 12px; border-radius: 999px; font-weight: 600; }
+    .hdr-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    #statusMessage { font-size: .78rem; background: rgba(255,255,255,.14); padding: 7px 12px; border-radius: 999px; font-weight: 600; }
+    .hbtn { background: rgba(255,255,255,.16); color: #fff; border: 1px solid rgba(255,255,255,.25); padding: 7px 13px; border-radius: 999px; font-size: .8rem; font-weight: 700; cursor: pointer; transition: .15s; }
+    .hbtn:hover { background: rgba(255,255,255,.28); }
     .main { margin-top: -44px; }
 
     /* Tabs */
-    .tabs { display: inline-flex; gap: 4px; background: #fff; padding: 5px; border-radius: 12px; box-shadow: var(--shadow); margin-bottom: 18px; }
+    .tabs { display: inline-flex; gap: 4px; background: var(--card-bg); padding: 5px; border-radius: 12px; box-shadow: var(--shadow); margin-bottom: 18px; border: 1px solid var(--line); }
     .tab-btn { padding: 9px 18px; border: none; background: none; cursor: pointer; font-size: .9rem; font-weight: 600; color: var(--text-muted); border-radius: 8px; transition: .2s; }
-    .tab-btn.active { background: var(--primary); color: #fff; }
+    .tab-btn.active { background: var(--primary-strong); color: #fff; }
     .tab-content { display: none; }
     .tab-content.active { display: block; }
 
     /* Toolbar */
-    .toolbar { background: var(--card-bg); padding: 12px; border-radius: 12px; box-shadow: var(--shadow); display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
-    .field { flex: 1; min-width: 180px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 8px; font-size: .92rem; outline: none; background: #fff; transition: .15s; }
+    .toolbar { background: var(--card-bg); padding: 12px; border-radius: 12px; box-shadow: var(--shadow); border: 1px solid var(--line); display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+    .field { flex: 1; min-width: 180px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 8px; font-size: .92rem; outline: none; background: var(--field-bg); color: var(--text); transition: .15s; color-scheme: dark; }
+    :root[data-theme="light"] .field { color-scheme: light; }
     .field:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-soft); }
     select.field { flex: 0 0 auto; min-width: 190px; }
-    .btn { padding: 10px 18px; background: var(--primary); color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: .88rem; transition: .2s; white-space: nowrap; }
-    .btn:hover { background: var(--primary-hover); }
+    .btn { padding: 10px 18px; background: var(--primary-strong); color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: .88rem; transition: .2s; white-space: nowrap; }
+    .btn:hover { filter: brightness(1.12); }
     .btn-ghost { background: var(--slate-bg); color: var(--slate); }
-    .btn-ghost:hover { background: #cbd5e1; }
     .btn-export { background: #16a34a; }
-    .btn-export:hover { background: #15803d; }
     .check { display: flex; align-items: center; gap: 6px; font-size: .85rem; font-weight: 600; color: var(--text-muted); cursor: pointer; }
-    .check input { width: 16px; height: 16px; accent-color: var(--primary); }
+    .check input { width: 16px; height: 16px; accent-color: var(--primary-strong); }
 
     /* Stats */
     .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 16px; }
-    .stat { background: var(--card-bg); border-radius: 12px; padding: 14px 16px; box-shadow: var(--shadow); }
+    .stat { background: var(--card-bg); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; box-shadow: var(--shadow); }
     .stat .num { font-size: 1.6rem; font-weight: 800; color: var(--primary); line-height: 1.1; }
-    .stat .lbl { font-size: .75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; margin-top: 4px; }
+    .stat .lbl { font-size: .74rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; margin-top: 4px; }
 
-    /* Cards */
+    /* Cards: accent colour follows the tag */
     .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; align-items: start; }
-    .card { background: var(--card-bg); border-radius: 14px; box-shadow: var(--shadow); border: 1px solid var(--line); overflow: hidden; display: flex; flex-direction: column; }
+    .card { --accent: var(--slate); --accent-bg: var(--slate-bg);
+      background: linear-gradient(180deg, var(--accent-bg) 0, var(--card-bg) 110px);
+      border-radius: 14px; box-shadow: var(--shadow); border: 1px solid var(--line); border-left: 5px solid var(--accent);
+      overflow: hidden; display: flex; flex-direction: column; }
+    .card.green { --accent: var(--green); --accent-bg: var(--green-bg); }
+    .card.red   { --accent: var(--red);   --accent-bg: var(--red-bg); }
+    .card.amber { --accent: var(--amber); --accent-bg: var(--amber-bg); }
     .card-top { padding: 14px 16px 10px; display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
     .consumer-label { font-size: .68rem; text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); font-weight: 700; }
-    .consumer-no { font-size: 1.15rem; font-weight: 800; color: var(--text); word-break: break-all; }
+    .consumer-no { font-size: 1.15rem; font-weight: 800; word-break: break-all; }
     .count-badge { background: var(--primary-soft); color: var(--primary); font-size: .72rem; font-weight: 700; padding: 4px 9px; border-radius: 999px; white-space: nowrap; }
     .card-body { padding: 0 16px 12px; }
-    .pill { display: inline-block; font-size: .75rem; font-weight: 700; padding: 4px 10px; border-radius: 999px; margin-bottom: 10px; }
+    .pill { display: inline-block; font-size: .76rem; font-weight: 700; padding: 4px 10px; border-radius: 999px; margin-bottom: 10px; }
     .pill.green { background: var(--green-bg); color: var(--green); }
     .pill.red { background: var(--red-bg); color: var(--red); }
     .pill.amber { background: var(--amber-bg); color: var(--amber); }
     .pill.slate { background: var(--slate-bg); color: var(--slate); }
     .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; margin-bottom: 10px; }
-    .kv .k { font-size: .68rem; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); font-weight: 700; }
+    .kv .k { font-size: .66rem; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); font-weight: 700; }
     .kv .v { font-size: .9rem; font-weight: 600; word-break: break-word; }
-    .remarks { background: #f8fafc; border-left: 3px solid var(--primary); padding: 8px 10px; border-radius: 6px; font-size: .85rem; line-height: 1.4; margin-bottom: 10px; color: #1e293b; }
+    .remarks { background: var(--card-sub); border-left: 3px solid var(--accent); padding: 8px 10px; border-radius: 6px; font-size: .86rem; line-height: 1.45; margin-bottom: 10px; }
     .remarks small { display: block; color: var(--text-muted); font-weight: 700; font-size: .66rem; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 2px; }
     .actions { display: flex; gap: 8px; flex-wrap: wrap; }
     .chip-link { font-size: .8rem; font-weight: 600; color: var(--primary); background: var(--primary-soft); padding: 6px 12px; border-radius: 8px; text-decoration: none; transition: .15s; }
-    .chip-link:hover { background: #c7d2fe; }
+    .chip-link:hover { filter: brightness(1.25); }
     .card-foot { margin-top: auto; border-top: 1px solid var(--line); }
-    .hist-toggle { width: 100%; background: #f8fafc; border: none; padding: 10px 16px; font-size: .82rem; font-weight: 700; color: var(--primary); cursor: pointer; text-align: left; display: flex; justify-content: space-between; }
-    .hist-toggle:hover { background: #eef2ff; }
-    .history { display: none; padding: 6px 16px 14px; background: #f8fafc; }
+    .hist-toggle { width: 100%; background: var(--card-sub); border: none; padding: 10px 16px; font-size: .82rem; font-weight: 700; color: var(--primary); cursor: pointer; text-align: left; display: flex; justify-content: space-between; }
+    .hist-toggle:hover { filter: brightness(1.2); }
+    .history { display: none; padding: 6px 16px 14px; background: var(--card-sub); }
     .history.open { display: block; }
-    .hist-item { position: relative; padding: 10px 0 10px 18px; border-left: 2px solid #cbd5e1; margin-left: 5px; }
-    .hist-item::before { content: ""; position: absolute; left: -6px; top: 14px; width: 10px; height: 10px; border-radius: 50%; background: #fff; border: 2px solid var(--primary); }
+    .hist-item { position: relative; padding: 10px 0 10px 18px; border-left: 2px solid var(--line); margin-left: 5px; }
+    .hist-item::before { content: ""; position: absolute; left: -6px; top: 14px; width: 10px; height: 10px; border-radius: 50%; background: var(--card-bg); border: 2px solid var(--primary); }
     .hist-time { font-size: .75rem; font-weight: 700; color: var(--text-muted); }
     .hist-line { font-size: .85rem; margin-top: 4px; display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; }
     .hist-line .pill { margin: 0; font-size: .7rem; padding: 3px 8px; }
-    .hist-rem { font-size: .82rem; color: #334155; margin-top: 4px; }
+    .hist-rem { font-size: .82rem; color: var(--text-muted); margin-top: 4px; }
     .hist-links { margin-top: 6px; display: flex; gap: 8px; }
     .hist-links a { font-size: .78rem; font-weight: 600; color: var(--primary); text-decoration: none; }
-    .hist-links a:hover { text-decoration: underline; }
-    .empty { text-align: center; padding: 48px 16px; color: var(--text-muted); font-weight: 600; background: #fff; border-radius: 12px; box-shadow: var(--shadow); }
+    .empty { text-align: center; padding: 48px 16px; color: var(--text-muted); font-weight: 600; background: var(--card-bg); border: 1px solid var(--line); border-radius: 12px; }
     .more-wrap { text-align: center; margin: 22px 0 4px; }
 
     /* Report */
-    .section-card { background: var(--card-bg); border-radius: 14px; box-shadow: var(--shadow); padding: 18px; margin-bottom: 20px; }
+    .section-card { background: var(--card-bg); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); padding: 18px; margin-bottom: 20px; }
     .section-card h2 { font-size: 1.05rem; color: var(--primary); margin-bottom: 12px; }
     .table-container { overflow-x: auto; margin-bottom: 14px; }
-    .pivot-wrap { display: inline-block; background: #fff; padding: 16px; border-radius: 8px; }
-    .pivot-table { border-collapse: collapse; text-align: center; font-size: .9rem; border: 2px solid var(--border); }
-    .pivot-table th, .pivot-table td { border: 1px solid var(--border); padding: 8px 10px; }
+    /* Pivot stays light on purpose so the exported image looks the same in any theme */
+    .pivot-wrap { display: inline-block; background: #ffffff; color: #0f172a; padding: 16px; border-radius: 8px; }
+    .pivot-table { border-collapse: collapse; text-align: center; font-size: .9rem; border: 2px solid #475569; }
+    .pivot-table th, .pivot-table td { border: 1px solid #475569; padding: 8px 10px; }
     .pivot-table td { font-weight: 800; font-size: 1.05rem; }
-    .pivot-table th.row-label { text-align: left; white-space: nowrap; font-weight: 800; background: #f1f5f9; color: var(--primary); min-width: 150px; }
-    .pivot-table th.col-header { background: var(--primary); color: #fff; padding: 12px 8px; vertical-align: middle; font-weight: 700; white-space: normal; min-width: 95px; max-width: 120px; line-height: 1.3; }
+    .pivot-table th.row-label { text-align: left; white-space: nowrap; font-weight: 800; background: #f1f5f9; color: #1e40af; min-width: 150px; }
+    .pivot-table th.col-header { background: #1e40af; color: #fff; padding: 12px 8px; vertical-align: middle; font-weight: 700; white-space: normal; min-width: 95px; max-width: 120px; line-height: 1.3; }
     .pivot-table .grand-total { font-weight: 900; background: #cbd5e1; color: #0f172a !important; }
     .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
 
@@ -127,50 +151,55 @@
 <div class="app-header">
   <div class="inner">
     <div>
-      <h1>⚡ Field Data Portal</h1>
-      <p>Meter checking records &amp; team reports</p>
+      <h1>⚡ <span data-i18n="title"></span></h1>
+      <p data-i18n="subtitle"></p>
     </div>
-    <div id="statusMessage">Loading data from Google Sheet...</div>
+    <div class="hdr-right">
+      <span id="statusMessage"></span>
+      <button class="hbtn" id="refreshBtn" data-i18n="refresh"></button>
+      <button class="hbtn" id="langBtn"></button>
+      <button class="hbtn" id="themeBtn"></button>
+    </div>
   </div>
 </div>
 
 <div class="container main">
   <div class="tabs">
-    <button class="tab-btn active" data-tab="searchTab">Search Records</button>
-    <button class="tab-btn" data-tab="reportTab">Daily Pivot Report</button>
+    <button class="tab-btn active" data-tab="searchTab" data-i18n="tabSearch"></button>
+    <button class="tab-btn" data-tab="reportTab" data-i18n="tabReport"></button>
   </div>
 
   <!-- TAB 1: SEARCH RECORDS (cards) -->
   <div id="searchTab" class="tab-content active">
     <div class="stats">
-      <div class="stat"><div class="num" id="statConsumers">0</div><div class="lbl">Consumers</div></div>
-      <div class="stat"><div class="num" id="statReports">0</div><div class="lbl">Total Reports</div></div>
-      <div class="stat"><div class="num" id="statRepeat">0</div><div class="lbl">Repeat Consumers</div></div>
+      <div class="stat"><div class="num" id="statConsumers">0</div><div class="lbl" data-i18n="consumers"></div></div>
+      <div class="stat"><div class="num" id="statReports">0</div><div class="lbl" data-i18n="totalReports"></div></div>
+      <div class="stat"><div class="num" id="statRepeat">0</div><div class="lbl" data-i18n="repeatConsumers"></div></div>
     </div>
 
     <div class="toolbar">
-      <input type="text" id="searchInput" class="field" placeholder="🔍 Search consumer, meter, worker, tag, remarks...">
-      <select id="tagFilter" class="field"><option value="">All tags</option></select>
-      <button class="btn btn-ghost" id="resetBtn">Reset</button>
+      <input type="text" id="searchInput" class="field" data-i18n-ph="searchPh">
+      <select id="tagFilter" class="field"></select>
+      <button class="btn btn-ghost" id="resetBtn" data-i18n="reset"></button>
     </div>
 
     <div id="cardsContainer" class="cards"></div>
     <div class="more-wrap" id="moreWrap" style="display:none;">
-      <button class="btn btn-ghost" id="moreBtn">Load more</button>
+      <button class="btn btn-ghost" id="moreBtn"></button>
     </div>
   </div>
 
   <!-- TAB 2: SUMMARY REPORT -->
   <div id="reportTab" class="tab-content">
     <div class="toolbar">
-      <label style="font-weight:600; color:var(--text-muted); font-size:.9rem;">Filter Date:</label>
+      <label style="font-weight:600; color:var(--text-muted); font-size:.9rem;" data-i18n="filterDate"></label>
       <input type="date" id="reportDate" class="field" style="max-width:220px;">
-      <button class="btn btn-ghost" id="clearDateBtn">Clear</button>
-      <label class="check"><input type="checkbox" id="dedupeToggle" checked> Count each consumer once</label>
+      <button class="btn btn-ghost" id="clearDateBtn" data-i18n="clear"></button>
+      <label class="check"><input type="checkbox" id="dedupeToggle" checked> <span data-i18n="dedupe"></span></label>
     </div>
 
     <div class="section-card">
-      <h2>No-Comm Checking Report</h2>
+      <h2 data-i18n="noCommTitle"></h2>
       <div class="table-container">
         <div id="pivotTableContainerNoComm" class="pivot-wrap">
           <table class="pivot-table" id="pivotTableNoComm">
@@ -180,13 +209,13 @@
         </div>
       </div>
       <div class="btn-row">
-        <button class="btn btn-export" onclick="exportToCSV('pivotTableNoComm', 'NoComm')">📊 Export Excel</button>
-        <button class="btn" onclick="downloadScreenshot('pivotTableContainerNoComm', 'NoComm')">📸 Download Image</button>
+        <button class="btn btn-export" data-i18n="exportXls" onclick="exportToCSV('pivotTableNoComm', 'NoComm')"></button>
+        <button class="btn" data-i18n="dlImage" onclick="downloadScreenshot('pivotTableContainerNoComm', 'NoComm')"></button>
       </div>
     </div>
 
     <div class="section-card">
-      <h2>Negative Balance Checking Report</h2>
+      <h2 data-i18n="negTitle"></h2>
       <div class="table-container">
         <div id="pivotTableContainerNegBalance" class="pivot-wrap">
           <table class="pivot-table" id="pivotTableNegBalance">
@@ -196,8 +225,8 @@
         </div>
       </div>
       <div class="btn-row">
-        <button class="btn btn-export" onclick="exportToCSV('pivotTableNegBalance', 'NegBalance')">📊 Export Excel</button>
-        <button class="btn" onclick="downloadScreenshot('pivotTableContainerNegBalance', 'NegBalance')">📸 Download Image</button>
+        <button class="btn btn-export" data-i18n="exportXls" onclick="exportToCSV('pivotTableNegBalance', 'NegBalance')"></button>
+        <button class="btn" data-i18n="dlImage" onclick="downloadScreenshot('pivotTableContainerNegBalance', 'NegBalance')"></button>
       </div>
     </div>
   </div>
@@ -209,9 +238,13 @@
   const PAGE_SIZE = 40;
   // ---------------------
 
-  let rawRecords = [];   // every row, with _ts / _idx added
-  let groups = [];       // one entry per consumer, sorted latest -> oldest
+  let sourceRows = [];   // rows exactly as saved in the browser cache
+  let rawRecords = [];   // sourceRows + _ts / _idx
+  let groups = [];       // one entry per consumer, latest -> oldest
   let visibleCount = PAGE_SIZE;
+  let lang = "as";       // Assamese by default
+  let theme = "dark";
+  let statusState = { key: "loading" };
 
   const teamMapping = {
     "sofior rahman": "Abdul Monnaf",
@@ -241,11 +274,71 @@
     "Meter not found",
     "Smart meter not installed"
   ];
+  const negBalanceTagCategories = ["No malpractice found", "Meter bypass found"];
 
-  const negBalanceTagCategories = [
-    "No malpractice found",
-    "Meter bypass found"
-  ];
+  // ---------- translations ----------
+  const TAG_AS = {
+    "meter working ok/communication issue": "মিটাৰ ঠিকে আছে/যোগাযোগৰ সমস্যা",
+    "meter display error": "মিটাৰ ডিছপ্লে ত্ৰুটি",
+    "meter/terminal burnt": "মিটাৰ/টাৰ্মিনেল পুৰি যোৱা",
+    "meter number wrong": "মিটাৰ নম্বৰ ভুল",
+    "service wire faulty": "সংযোগৰ তাঁৰ ত্ৰুটিপূৰ্ণ",
+    "meter inaccessible": "মিটাৰ অগম্য",
+    "meter not found": "মিটাৰ পোৱা নগ'ল",
+    "smart meter not installed": "স্মাৰ্ট মিটাৰ স্থাপন কৰা হোৱা নাই",
+    "no malpractice found": "কোনো অনিয়ম পোৱা নগ'ল",
+    "meter bypass found": "মিটাৰ বাইপাছ পোৱা গ'ল"
+  };
+
+  const I18N = {
+    en: {
+      title: "Field Data Portal", subtitle: "Meter checking records & team reports",
+      tabSearch: "Search Records", tabReport: "Daily Pivot Report",
+      consumers: "Consumers", totalReports: "Total Reports", repeatConsumers: "Repeat Consumers",
+      searchPh: "🔍 Search consumer, meter, worker, tag, remarks...", allTags: "All tags", reset: "Reset",
+      loadMore: "Load more", remaining: "remaining",
+      consumerNo: "Consumer No", meterNo: "Meter No", reading: "Reading", worker: "Field Worker", leader: "Team Leader",
+      latest: "Latest Report", remarks: "Remarks", location: "📍 Location", photo: "🖼 Photo",
+      prev: "Previous reports", report1: "report", reportN: "reports", noTag: "No tag", noRecords: "No records found.",
+      filterDate: "Filter Date:", clear: "Clear", dedupe: "Count each consumer once",
+      noCommTitle: "No-Comm Checking Report", negTitle: "Negative Balance Checking Report",
+      noCommLeader: "No-comm Team leader", negLeader: "Negative Balance Team leader",
+      exportXls: "📊 Export Excel", dlImage: "📸 Download Image", grandTotal: "Grand Total", noData: "No data for this date.",
+      refresh: "⟳ Refresh", light: "☀️ Light", dark: "🌙 Dark"
+    },
+    as: {
+      title: "ক্ষেত্ৰ তথ্য পৰ্টেল", subtitle: "মিটাৰ পৰীক্ষাৰ ৰেকৰ্ড আৰু দলৰ প্ৰতিবেদন",
+      tabSearch: "ৰেকৰ্ড সন্ধান", tabReport: "দৈনিক পিভট প্ৰতিবেদন",
+      consumers: "গ্ৰাহক", totalReports: "মুঠ প্ৰতিবেদন", repeatConsumers: "পুনৰাবৃত্ত গ্ৰাহক",
+      searchPh: "🔍 গ্ৰাহক, মিটাৰ, কৰ্মী, টেগ, মন্তব্য সন্ধান কৰক...", allTags: "সকলো টেগ", reset: "ৰিছেট",
+      loadMore: "অধিক লোড কৰক", remaining: "বাকী",
+      consumerNo: "গ্ৰাহক নং", meterNo: "মিটাৰ নং", reading: "ৰিডিং", worker: "ক্ষেত্ৰ কৰ্মী", leader: "দল নেতা",
+      latest: "শেহতীয়া প্ৰতিবেদন", remarks: "মন্তব্য", location: "📍 অৱস্থান", photo: "🖼 ফটো",
+      prev: "পূৰ্বৰ প্ৰতিবেদন", report1: "প্ৰতিবেদন", reportN: "প্ৰতিবেদন", noTag: "টেগ নাই", noRecords: "কোনো ৰেকৰ্ড পোৱা নগ'ল।",
+      filterDate: "তাৰিখ বাছনি:", clear: "মচক", dedupe: "প্ৰতিজন গ্ৰাহকক এবাৰ গণনা কৰক",
+      noCommTitle: "নো-কম পৰীক্ষা প্ৰতিবেদন", negTitle: "ঋণাত্মক বেলেঞ্চ পৰীক্ষা প্ৰতিবেদন",
+      noCommLeader: "নো-কম দল নেতা", negLeader: "ঋণাত্মক বেলেঞ্চ দল নেতা",
+      exportXls: "📊 এক্সেল ৰপ্তানি", dlImage: "📸 ছবি ডাউনলোড", grandTotal: "সৰ্বমুঠ", noData: "এই তাৰিখৰ বাবে কোনো তথ্য নাই।",
+      refresh: "⟳ ৰিফ্ৰেছ", light: "☀️ লাইট", dark: "🌙 ডাৰ্ক"
+    }
+  };
+  const t = k => (I18N[lang][k] ?? I18N.en[k] ?? k);
+  const tagT = tag => (lang === "as" ? (TAG_AS[String(tag).trim().toLowerCase()] || tag) : tag);
+
+  function statusText() {
+    const s = statusState, n = rawRecords.length, c = groups.length;
+    const as = lang === "as";
+    switch (s.key) {
+      case "loading": return as ? "তথ্য লোড হৈ আছে..." : "Loading data...";
+      case "syncing": return as ? `${n} প্ৰতিবেদন • নতুন তথ্য বিচাৰি আছে...` : `${n} reports • checking for new entries...`;
+      case "loaded": return as
+        ? `${n} প্ৰতিবেদন • ${c} গ্ৰাহক${s.added ? ` • +${s.added} নতুন` : ""}`
+        : `${n} reports • ${c} consumers${s.added ? ` • +${s.added} new` : ""}`;
+      case "offline": return as ? `অফলাইন – সংৰক্ষিত তথ্য (${n} প্ৰতিবেদন)` : `Offline – showing saved data (${n} reports)`;
+      default: return as ? "তথ্য লোড কৰিব পৰা নগ'ল। API URL পৰীক্ষা কৰক।" : "Failed to load records. Check API URL and permissions.";
+    }
+  }
+  function setStatus(key, extra) { statusState = Object.assign({ key }, extra || {}); $("statusMessage").textContent = statusText(); }
 
   // ---------- helpers ----------
   const $ = id => document.getElementById(id);
@@ -253,14 +346,10 @@
   function esc(v) {
     return String(v ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   }
-
   function getTeamLeader(workerName) {
     if (!workerName) return "Unknown";
-    const clean = workerName.trim().toLowerCase();
-    return teamMapping[clean] || workerName;
+    return teamMapping[workerName.trim().toLowerCase()] || workerName;
   }
-
-  // Parses "15/09/2026 16:10:46" (dd/mm/yyyy) or ISO strings into a sortable number.
   function parseTs(ts) {
     if (!ts) return 0;
     const s = String(ts).trim();
@@ -269,41 +358,35 @@
     const d = new Date(s);
     return isNaN(d) ? 0 : d.getTime();
   }
-
   function extractDatePart(timestamp) {
     if (!timestamp) return "";
     if (timestamp.includes(" ")) return timestamp.split(" ")[0];
     if (timestamp.includes("T")) return timestamp.split("T")[0];
     return timestamp;
   }
-
   function validConsumer(v) {
     const s = String(v ?? "").trim();
     return s && s.toUpperCase() !== "N/A" ? s : "";
   }
-
   function tagClass(tag) {
-    const t = (tag || "").toLowerCase();
-    if (!t) return "slate";
-    if (t.includes("no malpractice") || t.includes("working ok")) return "green";
-    if (t.includes("bypass") || t.includes("burnt") || t.includes("faulty")) return "red";
+    const x = (tag || "").toLowerCase();
+    if (!x) return "slate";
+    if (x.includes("no malpractice") || x.includes("working ok")) return "green";
+    if (x.includes("bypass") || x.includes("burnt") || x.includes("faulty")) return "red";
     return "amber";
   }
-
   function getPhotoUrl(item) {
     const key = Object.keys(item).find(k => /photo|image|link|url/i.test(k));
     let url = (key ? item[key] : "").toString().trim();
     if (url.startsWith("'")) url = url.substring(1);
     return url.startsWith("http") ? url : "";
   }
-
   function getMapUrl(item) {
     const lat = item["Latitude"] || item["Lat"] || "";
     const long = item["Longitude"] || item["Long"] || "";
     if (lat && lat !== "N/A" && long && long !== "N/A") return `https://maps.google.com/?q=${encodeURIComponent(lat)},${encodeURIComponent(long)}`;
     return "";
   }
-
   function getHeatmapStyle(value) {
     if (value === 0) return "background-color: transparent; color: inherit;";
     if (value <= 2) return "background-color: #dbeafe; color: #1e3a8a;";
@@ -311,37 +394,133 @@
     if (value <= 9) return "background-color: #3b82f6; color: #ffffff;";
     return "background-color: #1e40af; color: #ffffff;";
   }
-
-  // Latest first; for identical timestamps, the row lower in the sheet (added later) wins.
   const newestFirst = (a, b) => (b._ts - a._ts) || (b._idx - a._idx);
+  // The original remark wins; the refined one is only a fallback when the original is empty.
+  const pickRemark = r => String(r["Remarks (Original)"] || r["Remarks"] || "").trim() || String(r["Remarks (Refined)"] || "").trim();
 
-  // ---------- data ----------
-  async function loadSheetData() {
-    const status = $("statusMessage");
+  // ---------- browser cache (IndexedDB) ----------
+  function idb() {
+    return new Promise((res, rej) => {
+      const rq = indexedDB.open("fieldPortal", 1);
+      rq.onupgradeneeded = () => rq.result.createObjectStore("kv");
+      rq.onsuccess = () => res(rq.result);
+      rq.onerror = () => rej(rq.error);
+    });
+  }
+  async function idbGet(k) {
     try {
-      const response = await fetch(API_URL);
-      const data = await response.json();
-      rawRecords = data.map((r, i) => Object.assign({}, r, { _ts: parseTs(r["Timestamp"]), _idx: i }));
-      $("reportDate").value = new Date().toISOString().split("T")[0];
+      const db = await idb();
+      return await new Promise((res, rej) => { const r = db.transaction("kv").objectStore("kv").get(k); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+    } catch (e) { return undefined; }
+  }
+  async function idbSet(k, v) {
+    try {
+      const db = await idb();
+      await new Promise((res, rej) => { const tx = db.transaction("kv", "readwrite"); tx.objectStore("kv").put(v, k); tx.oncomplete = res; tx.onerror = () => rej(tx.error); });
+    } catch (e) { /* cache is best-effort */ }
+  }
 
-      buildGroups();
-      populateTagFilter();
-      applyFilters();
-      generateSummaryReport();
+  // ---------- remark translation (cached) ----------
+  let trCache = {};
+  let trDirty = false;
+  const needsTranslate = s => s && !/[\u0980-\u09FF]/.test(s) && /[A-Za-z]/.test(s); // skip text already in Assamese/Bengali script
 
-      status.textContent = `${rawRecords.length} reports • ${groups.length} consumers`;
+  async function translateText(text) {
+    try {
+      const url = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=as&dt=t&q=" + encodeURIComponent(text);
+      const res = await fetch(url);
+      const data = await res.json();
+      const out = (data[0] || []).map(s => s[0]).join("");
+      return out || null;
+    } catch (e) { return null; }
+  }
+
+  function trSpan(text) {
+    if (!text) return "";
+    const cached = lang === "as" ? trCache[text] : null;
+    const pending = lang === "as" && !cached && needsTranslate(text);
+    return `<span ${pending ? 'data-tr="1" ' : ""}data-src="${esc(text)}">${esc(cached || text)}</span>`;
+  }
+
+  async function translatePending(root) {
+    root = root || document;
+    const els = [...root.querySelectorAll("[data-tr]")].filter(el => !el.closest(".history:not(.open)"));
+    let i = 0;
+    const worker = async () => {
+      while (i < els.length) {
+        const el = els[i++];
+        if (lang !== "as") return;
+        const src = el.dataset.src;
+        let out = trCache[src];
+        if (!out) { out = await translateText(src); if (out) { trCache[src] = out; trDirty = true; } }
+        if (out && lang === "as" && el.isConnected) el.textContent = out;
+        el.removeAttribute("data-tr");
+      }
+    };
+    await Promise.all([worker(), worker(), worker()]);
+    if (trDirty) { trDirty = false; idbSet("translations", trCache); }
+  }
+
+  // ---------- data loading: cache first, then only new rows ----------
+  const prep = rows => rows.map((r, i) => Object.assign({}, r, { _ts: parseTs(r["Timestamp"]), _idx: i }));
+
+  function rebuildAll() {
+    rawRecords = prep(sourceRows);
+    buildGroups();
+    populateTagFilter();
+    applyFilters(true);
+    generateSummaryReport();
+  }
+
+  async function loadSheetData(force) {
+    if (!force && !sourceRows.length) {
+      const cached = await idbGet("records");
+      if (cached && cached.url === API_URL && Array.isArray(cached.rows) && cached.rows.length) {
+        sourceRows = cached.rows;
+        rebuildAll();
+        setStatus("syncing");
+      } else setStatus("loading");
+    } else setStatus("syncing");
+
+    const cachedRows = force ? [] : sourceRows;
+    const after = cachedRows.length;
+
+    try {
+      const res = await fetch(API_URL + (API_URL.includes("?") ? "&" : "?") + "after=" + after);
+      const data = await res.json();
+      let rows, added = 0, changed = true;
+
+      if (Array.isArray(data)) {
+        // Original script: returns every row. Still fine, we just refresh the cache.
+        rows = data;
+        added = Math.max(0, rows.length - after);
+        changed = force || after === 0 || rows.length !== after || JSON.stringify(rows[rows.length - 1]) !== JSON.stringify(cachedRows[after - 1]);
+      } else {
+        // Incremental script: { total, rows } containing only rows after `after`.
+        const newRows = data.rows || [];
+        if (after > 0 && (data.total < after || after + newRows.length !== data.total)) return loadSheetData(true);
+        rows = cachedRows.concat(newRows);
+        added = newRows.length;
+        changed = added > 0 || after === 0;
+      }
+
+      if (changed) {
+        sourceRows = rows;
+        await idbSet("records", { url: API_URL, rows });
+        rebuildAll();
+      }
+      setStatus("loaded", { added: after > 0 ? added : 0 });
     } catch (err) {
-      status.textContent = "Failed to load records. Check API URL and permissions.";
       console.error(err);
+      setStatus(sourceRows.length ? "offline" : "failed");
     }
   }
 
-  // Merge all reports of the same consumer into one group, newest report first.
   function buildGroups() {
     const map = new Map();
     rawRecords.forEach(r => {
       const c = validConsumer(r["Consumer No"]);
-      const key = c ? "c:" + c.toLowerCase() : "row:" + r._idx; // rows without a consumer no. are never merged
+      const key = c ? "c:" + c.toLowerCase() : "row:" + r._idx;
       if (!map.has(key)) map.set(key, { consumer: c, records: [] });
       map.get(key).records.push(r);
     });
@@ -351,9 +530,11 @@
   }
 
   function populateTagFilter() {
-    const tags = [...new Set(rawRecords.map(r => (r["Tag"] || "").trim()).filter(Boolean))].sort();
     const sel = $("tagFilter");
-    sel.innerHTML = `<option value="">All tags</option>` + tags.map(t => `<option value="${esc(t)}">${esc(t)}</option>`).join("");
+    const keep = sel.value;
+    const tags = [...new Set(rawRecords.map(r => (r["Tag"] || "").trim()).filter(Boolean))].sort();
+    sel.innerHTML = `<option value="">${esc(t("allTags"))}</option>` + tags.map(x => `<option value="${esc(x)}">${esc(tagT(x))}</option>`).join("");
+    sel.value = tags.includes(keep) ? keep : "";
   }
 
   // ---------- search cards ----------
@@ -368,32 +549,25 @@
       return g.records.some(r => Object.entries(r).some(([k, v]) => !k.startsWith("_") && String(v).toLowerCase().includes(q)));
     });
 
-    renderStats(filtered);
+    $("statConsumers").textContent = filtered.length;
+    $("statReports").textContent = filtered.reduce((n, g) => n + g.records.length, 0);
+    $("statRepeat").textContent = filtered.filter(g => g.records.length > 1).length;
     renderCards(filtered);
-  }
-
-  function renderStats(list) {
-    const reports = list.reduce((n, g) => n + g.records.length, 0);
-    $("statConsumers").textContent = list.length;
-    $("statReports").textContent = reports;
-    $("statRepeat").textContent = list.filter(g => g.records.length > 1).length;
   }
 
   function renderCards(list) {
     const box = $("cardsContainer");
     if (!list.length) {
-      box.innerHTML = "";
-      box.insertAdjacentHTML("beforeend", `<div class="empty" style="grid-column:1/-1;">No records found.</div>`);
+      box.innerHTML = `<div class="empty" style="grid-column:1/-1;">${esc(t("noRecords"))}</div>`;
       $("moreWrap").style.display = "none";
       return;
     }
-
     const shown = list.slice(0, visibleCount);
     box.innerHTML = shown.map((g, i) => cardHtml(g, i)).join("");
-
     const remaining = list.length - shown.length;
     $("moreWrap").style.display = remaining > 0 ? "block" : "none";
-    $("moreBtn").textContent = `Load more (${remaining} remaining)`;
+    $("moreBtn").textContent = `${t("loadMore")} (${remaining} ${t("remaining")})`;
+    translatePending(box);
   }
 
   function cardHtml(g, i) {
@@ -401,40 +575,37 @@
     const older = g.records.slice(1);
     const tag = (r["Tag"] || "").trim();
     const worker = r["Field Worker"] || "Unknown";
-    const leader = getTeamLeader(worker);
-    const orig = r["Remarks (Original)"] || r["Remarks"] || "";
-    const refined = r["Remarks (Refined)"] || "";
-    const map = getMapUrl(r);
-    const photo = getPhotoUrl(r);
+    const remark = pickRemark(r);
+    const map = getMapUrl(r), photo = getPhotoUrl(r);
+    const n = g.records.length;
 
     return `
-      <div class="card">
+      <div class="card ${tagClass(tag)}">
         <div class="card-top">
           <div>
-            <div class="consumer-label">Consumer No</div>
+            <div class="consumer-label">${esc(t("consumerNo"))}</div>
             <div class="consumer-no">${esc(g.consumer || "N/A")}</div>
           </div>
-          <span class="count-badge">${g.records.length} report${g.records.length > 1 ? "s" : ""}</span>
+          <span class="count-badge">${n} ${esc(n > 1 ? t("reportN") : t("report1"))}</span>
         </div>
         <div class="card-body">
-          <span class="pill ${tagClass(tag)}">${esc(tag || "No tag")}</span>
+          <span class="pill ${tagClass(tag)}">${esc(tag ? tagT(tag) : t("noTag"))}</span>
           <div class="grid2">
-            <div class="kv"><div class="k">Meter No</div><div class="v">${esc(r["Meter No"] || "N/A")}</div></div>
-            <div class="kv"><div class="k">Reading</div><div class="v">${esc(r["Reading"] || "N/A")}</div></div>
-            <div class="kv"><div class="k">Field Worker</div><div class="v">${esc(worker)}</div></div>
-            <div class="kv"><div class="k">Team Leader</div><div class="v">${esc(leader)}</div></div>
-            <div class="kv" style="grid-column:1/-1;"><div class="k">Latest Report</div><div class="v">${esc(r["Timestamp"] || "")}</div></div>
+            <div class="kv"><div class="k">${esc(t("meterNo"))}</div><div class="v">${esc(r["Meter No"] || "N/A")}</div></div>
+            <div class="kv"><div class="k">${esc(t("reading"))}</div><div class="v">${esc(r["Reading"] || "N/A")}</div></div>
+            <div class="kv"><div class="k">${esc(t("worker"))}</div><div class="v">${esc(worker)}</div></div>
+            <div class="kv"><div class="k">${esc(t("leader"))}</div><div class="v">${esc(getTeamLeader(worker))}</div></div>
+            <div class="kv" style="grid-column:1/-1;"><div class="k">${esc(t("latest"))}</div><div class="v">${esc(r["Timestamp"] || "")}</div></div>
           </div>
-          ${refined ? `<div class="remarks"><small>Refined remarks</small>${esc(refined)}</div>` : ""}
-          ${orig ? `<div class="remarks" style="border-left-color:#94a3b8;"><small>Original remarks</small>${esc(orig)}</div>` : ""}
+          ${remark ? `<div class="remarks"><small>${esc(t("remarks"))}</small>${trSpan(remark)}</div>` : ""}
           <div class="actions">
-            ${map ? `<a class="chip-link" target="_blank" rel="noopener" href="${map}">📍 Location</a>` : ""}
-            ${photo ? `<a class="chip-link" target="_blank" rel="noopener" href="${esc(photo)}">🖼 Photo</a>` : ""}
+            ${map ? `<a class="chip-link" target="_blank" rel="noopener" href="${map}">${esc(t("location"))}</a>` : ""}
+            ${photo ? `<a class="chip-link" target="_blank" rel="noopener" href="${esc(photo)}">${esc(t("photo"))}</a>` : ""}
           </div>
         </div>
         ${older.length ? `
         <div class="card-foot">
-          <button class="hist-toggle" data-target="hist-${i}"><span>Previous reports (${older.length})</span><span>▾</span></button>
+          <button class="hist-toggle" data-target="hist-${i}"><span>${esc(t("prev"))} (${older.length})</span><span>▾</span></button>
           <div class="history" id="hist-${i}">${older.map(historyItemHtml).join("")}</div>
         </div>` : ""}
       </div>`;
@@ -442,42 +613,39 @@
 
   function historyItemHtml(r) {
     const tag = (r["Tag"] || "").trim();
-    const orig = r["Remarks (Refined)"] || r["Remarks (Original)"] || r["Remarks"] || "";
-    const map = getMapUrl(r);
-    const photo = getPhotoUrl(r);
+    const remark = pickRemark(r);
+    const map = getMapUrl(r), photo = getPhotoUrl(r);
     return `
       <div class="hist-item">
         <div class="hist-time">${esc(r["Timestamp"] || "")}</div>
         <div class="hist-line">
-          <span class="pill ${tagClass(tag)}">${esc(tag || "No tag")}</span>
+          <span class="pill ${tagClass(tag)}">${esc(tag ? tagT(tag) : t("noTag"))}</span>
           <span>👷 ${esc(r["Field Worker"] || "Unknown")}</span>
-          <span>Meter ${esc(r["Meter No"] || "N/A")}</span>
-          <span>Reading ${esc(r["Reading"] || "N/A")}</span>
+          <span>${esc(t("meterNo"))} ${esc(r["Meter No"] || "N/A")}</span>
+          <span>${esc(t("reading"))} ${esc(r["Reading"] || "N/A")}</span>
         </div>
-        ${orig ? `<div class="hist-rem">${esc(orig)}</div>` : ""}
+        ${remark ? `<div class="hist-rem">${trSpan(remark)}</div>` : ""}
         ${(map || photo) ? `<div class="hist-links">
-          ${map ? `<a target="_blank" rel="noopener" href="${map}">📍 Location</a>` : ""}
-          ${photo ? `<a target="_blank" rel="noopener" href="${esc(photo)}">🖼 Photo</a>` : ""}
+          ${map ? `<a target="_blank" rel="noopener" href="${map}">${esc(t("location"))}</a>` : ""}
+          ${photo ? `<a target="_blank" rel="noopener" href="${esc(photo)}">${esc(t("photo"))}</a>` : ""}
         </div>` : ""}
       </div>`;
   }
 
   // ---------- pivot report ----------
   function buildPivotTable(headId, bodyId, categories, rowLabel) {
-    const thead = $(headId);
-    const tbody = $(bodyId);
+    const thead = $(headId), tbody = $(bodyId);
     thead.innerHTML = "";
     tbody.innerHTML = "";
 
-    let headHtml = `<tr><th class="row-label" style="text-align:center; font-size:1rem; color:var(--primary);">${esc(rowLabel)}</th>`;
-    categories.forEach(cat => headHtml += `<th class="col-header">${esc(cat)}</th>`);
-    headHtml += `<th class="col-header grand-total" style="background-color:#94a3b8; color:#0f172a;">Grand Total</th></tr>`;
+    let headHtml = `<tr><th class="row-label" style="text-align:center; font-size:1rem;">${esc(rowLabel)}</th>`;
+    categories.forEach(cat => headHtml += `<th class="col-header">${esc(tagT(cat))}</th>`);
+    headHtml += `<th class="col-header grand-total" style="background-color:#94a3b8; color:#0f172a;">${esc(t("grandTotal"))}</th></tr>`;
     thead.innerHTML = headHtml;
 
     const filterDate = $("reportDate").value;
     const dedupe = $("dedupeToggle").checked;
 
-    // rows that fall in the chosen date and belong to this report, newest first
     let rows = rawRecords
       .filter(row => {
         if (filterDate && extractDatePart(row["Timestamp"] || "") !== filterDate) return false;
@@ -486,7 +654,6 @@
       })
       .sort(newestFirst);
 
-    // keep only the latest report per consumer
     if (dedupe) {
       const seen = new Set();
       rows = rows.filter(row => {
@@ -531,32 +698,31 @@
 
     if (absoluteGrandTotal > 0) {
       const footerTr = document.createElement("tr");
-      let footerHtml = `<th class="row-label grand-total">Grand Total</th>`;
+      let footerHtml = `<th class="row-label grand-total">${esc(t("grandTotal"))}</th>`;
       columnTotals.forEach(total => footerHtml += `<td class="grand-total">${total > 0 ? total : ""}</td>`);
       footerHtml += `<td class="grand-total">${absoluteGrandTotal}</td>`;
       footerTr.innerHTML = footerHtml;
       tbody.appendChild(footerTr);
     } else {
-      tbody.innerHTML = `<tr><td colspan="${categories.length + 2}" style="text-align:center; padding:20px; font-size:.95rem;">No data for this date.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="${categories.length + 2}" style="text-align:center; padding:20px; font-size:.95rem;">${esc(t("noData"))}</td></tr>`;
     }
   }
 
   function generateSummaryReport() {
-    buildPivotTable("pivotHeadNoComm", "reportTableBodyNoComm", noCommTagCategories, "No-comm Team leader");
-    buildPivotTable("pivotHeadNegBalance", "reportTableBodyNegBalance", negBalanceTagCategories, "Negative Balance Team leader");
+    buildPivotTable("pivotHeadNoComm", "reportTableBodyNoComm", noCommTagCategories, t("noCommLeader"));
+    buildPivotTable("pivotHeadNegBalance", "reportTableBodyNegBalance", negBalanceTagCategories, t("negLeader"));
   }
 
   function exportToCSV(tableId, label) {
-    const rows = $(tableId).querySelectorAll("tr");
     const csv = [];
-    rows.forEach(tr => {
+    $(tableId).querySelectorAll("tr").forEach(tr => {
       const row = [];
       tr.querySelectorAll("td, th").forEach(c => row.push('"' + c.innerText.replace(/(\r\n|\n|\r)/gm, " ").trim().replace(/"/g, '""') + '"'));
       csv.push(row.join(","));
     });
     const a = document.createElement("a");
     a.download = `${label}_Pivot_Report_${$("reportDate").value || "All_Time"}.csv`;
-    a.href = URL.createObjectURL(new Blob([csv.join("\n")], { type: "text/csv" }));
+    a.href = URL.createObjectURL(new Blob(["\uFEFF" + csv.join("\n")], { type: "text/csv;charset=utf-8" })); // BOM keeps Assamese readable in Excel
     a.click();
   }
 
@@ -569,7 +735,30 @@
     });
   }
 
-  // ---------- events ----------
+  // ---------- language / theme ----------
+  function applyStaticText() {
+    document.documentElement.lang = lang;
+    document.querySelectorAll("[data-i18n]").forEach(el => el.textContent = t(el.dataset.i18n));
+    document.querySelectorAll("[data-i18n-ph]").forEach(el => el.placeholder = t(el.dataset.i18nPh));
+    $("langBtn").textContent = lang === "as" ? "🌐 English" : "🌐 অসমীয়া";
+    $("themeBtn").textContent = theme === "dark" ? t("light") : t("dark");
+    $("statusMessage").textContent = statusText();
+  }
+
+  function applyLang() {
+    applyStaticText();
+    populateTagFilter();
+    applyFilters(true);
+    generateSummaryReport();
+  }
+
+  function setTheme(next) {
+    theme = next;
+    document.documentElement.setAttribute("data-theme", theme);
+    try { localStorage.setItem("portalTheme", theme); } catch (e) {}
+    $("themeBtn").textContent = theme === "dark" ? t("light") : t("dark");
+  }
+
   function switchTab(tabId) {
     document.querySelectorAll(".tab-content").forEach(el => el.classList.remove("active"));
     document.querySelectorAll(".tab-btn").forEach(el => el.classList.toggle("active", el.dataset.tab === tabId));
@@ -577,29 +766,37 @@
     if (tabId === "reportTab") generateSummaryReport();
   }
 
+  // ---------- events ----------
   let searchTimer;
-  window.addEventListener("DOMContentLoaded", () => {
-    document.querySelectorAll(".tab-btn").forEach(b => b.addEventListener("click", () => switchTab(b.dataset.tab)));
+  window.addEventListener("DOMContentLoaded", async () => {
+    try { const th = localStorage.getItem("portalTheme"); if (th) theme = th; } catch (e) {}
+    document.documentElement.setAttribute("data-theme", theme);
+    $("reportDate").value = new Date().toISOString().split("T")[0];
+    applyStaticText();
 
+    document.querySelectorAll(".tab-btn").forEach(b => b.addEventListener("click", () => switchTab(b.dataset.tab)));
     $("searchInput").addEventListener("input", () => { clearTimeout(searchTimer); searchTimer = setTimeout(() => applyFilters(), 200); });
     $("tagFilter").addEventListener("change", () => applyFilters());
     $("resetBtn").addEventListener("click", () => { $("searchInput").value = ""; $("tagFilter").value = ""; applyFilters(); });
     $("moreBtn").addEventListener("click", () => { visibleCount += PAGE_SIZE; applyFilters(true); });
-
     $("reportDate").addEventListener("change", generateSummaryReport);
     $("dedupeToggle").addEventListener("change", generateSummaryReport);
     $("clearDateBtn").addEventListener("click", () => { $("reportDate").value = ""; generateSummaryReport(); });
+    $("refreshBtn").addEventListener("click", () => loadSheetData(true));
+    $("langBtn").addEventListener("click", () => { lang = lang === "as" ? "en" : "as"; applyLang(); });
+    $("themeBtn").addEventListener("click", () => setTheme(theme === "dark" ? "light" : "dark"));
 
-    // expand / collapse previous reports
     $("cardsContainer").addEventListener("click", e => {
       const btn = e.target.closest(".hist-toggle");
       if (!btn) return;
       const panel = $(btn.dataset.target);
       const open = panel.classList.toggle("open");
       btn.lastElementChild.textContent = open ? "▴" : "▾";
+      if (open) translatePending(panel);
     });
 
-    loadSheetData();
+    trCache = (await idbGet("translations")) || {};
+    loadSheetData(false);
   });
 </script>
 
