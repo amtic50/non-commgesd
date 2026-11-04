@@ -4,181 +4,201 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Utility Field Data Portal</title>
-  
-  <!-- html2canvas Library -->
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
   <style>
     :root {
       --primary: #1e40af;
+      --primary-soft: #e0e7ff;
       --primary-hover: #1d4ed8;
-      --bg: #f8fafc;
+      --bg: #f1f5f9;
       --card-bg: #ffffff;
-      --border: #475569; 
+      --border: #475569;
+      --line: #e2e8f0;
       --text: #0f172a;
-      --text-muted: #475569;
+      --text-muted: #64748b;
+      --green: #15803d;  --green-bg: #dcfce7;
+      --red: #b91c1c;    --red-bg: #fee2e2;
+      --amber: #b45309;  --amber-bg: #fef3c7;
+      --slate: #475569;  --slate-bg: #e2e8f0;
+      --shadow: 0 1px 2px rgba(15,23,42,.06), 0 4px 14px rgba(15,23,42,.06);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background-color: var(--bg); color: var(--text); padding: 16px; }
-    .container { max-width: 1400px; margin: 0 auto; }
-    header { margin-bottom: 24px; }
-    h1 { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+    body { background: var(--bg); color: var(--text); }
+    .container { max-width: 1400px; margin: 0 auto; padding: 0 16px 40px; }
 
-    .tabs { display: flex; gap: 8px; border-bottom: 2px solid #e2e8f0; margin-bottom: 20px; flex-wrap: wrap; }
-    .tab-btn { padding: 10px 18px; border: none; background: none; cursor: pointer; font-size: 0.95rem; font-weight: 600; color: var(--text-muted); border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all 0.2s; }
-    .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+    /* Header */
+    .app-header { background: linear-gradient(135deg, #1e3a8a, #2563eb); color: #fff; padding: 20px 16px 64px; }
+    .app-header .inner { max-width: 1400px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    .app-header h1 { font-size: 1.4rem; font-weight: 700; letter-spacing: -.01em; }
+    .app-header p { font-size: .85rem; opacity: .8; margin-top: 2px; }
+    #statusMessage { font-size: .8rem; background: rgba(255,255,255,.15); padding: 6px 12px; border-radius: 999px; font-weight: 600; }
+    .main { margin-top: -44px; }
+
+    /* Tabs */
+    .tabs { display: inline-flex; gap: 4px; background: #fff; padding: 5px; border-radius: 12px; box-shadow: var(--shadow); margin-bottom: 18px; }
+    .tab-btn { padding: 9px 18px; border: none; background: none; cursor: pointer; font-size: .9rem; font-weight: 600; color: var(--text-muted); border-radius: 8px; transition: .2s; }
+    .tab-btn.active { background: var(--primary); color: #fff; }
     .tab-content { display: none; }
     .tab-content.active { display: block; }
 
-    .filter-box { background: var(--card-bg); padding: 16px; border-radius: 8px; border: 1px solid #e2e8f0; display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
-    .filter-input { flex: 1; min-width: 200px; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 0.95rem; outline: none; }
-    .btn { padding: 10px 20px; background-color: var(--primary); color: #fff; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: 0.2s; white-space: nowrap; }
-    .btn:hover { background-color: var(--primary-hover); }
-    .btn-export { background-color: #16a34a; }
-    .btn-export:hover { background-color: #15803d; }
+    /* Toolbar */
+    .toolbar { background: var(--card-bg); padding: 12px; border-radius: 12px; box-shadow: var(--shadow); display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+    .field { flex: 1; min-width: 180px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 8px; font-size: .92rem; outline: none; background: #fff; transition: .15s; }
+    .field:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-soft); }
+    select.field { flex: 0 0 auto; min-width: 190px; }
+    .btn { padding: 10px 18px; background: var(--primary); color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: .88rem; transition: .2s; white-space: nowrap; }
+    .btn:hover { background: var(--primary-hover); }
+    .btn-ghost { background: var(--slate-bg); color: var(--slate); }
+    .btn-ghost:hover { background: #cbd5e1; }
+    .btn-export { background: #16a34a; }
+    .btn-export:hover { background: #15803d; }
+    .check { display: flex; align-items: center; gap: 6px; font-size: .85rem; font-weight: 600; color: var(--text-muted); cursor: pointer; }
+    .check input { width: 16px; height: 16px; accent-color: var(--primary); }
 
-    .table-container { overflow-x: auto; margin-bottom: 20px; }
-    
-    /* SEARCH TABLE STYLES */
-    .search-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; background: var(--card-bg); }
-    .search-table th, .search-table td { padding: 10px 12px; border: 1px solid #e2e8f0; white-space: nowrap; }
-    .search-table th { background-color: #f1f5f9; color: var(--text-muted); font-weight: 600; }
-    .link-btn { color: var(--primary); text-decoration: none; font-weight: 600; }
-    .link-btn:hover { text-decoration: underline; }
-    
-    /* PIVOT REPORT TABLE STYLES */
-    .pivot-wrap {
-      display: inline-block;
-      background: #ffffff;
-      padding: 16px;
-      border-radius: 8px;
-    }
-    
-    .pivot-table { 
-      border-collapse: collapse; 
-      text-align: center; 
-      font-size: 0.9rem;
-      border: 2px solid var(--border);
-    }
-    
-    .pivot-table th, .pivot-table td { 
-      border: 1px solid var(--border); 
-      padding: 8px 10px; 
-    }
-    
-    .pivot-table td { 
-      font-weight: 800; 
-      font-size: 1.05rem;
-    }
-    
-    .pivot-table th.row-label { 
-      text-align: left; 
-      white-space: nowrap; 
-      font-weight: 800;
-      background-color: #f1f5f9;
-      color: var(--primary);
-      min-width: 150px;
-    }
-    
-    /* NO MORE ROTATION - Clean Wrapped Text for perfect screenshots */
-    .pivot-table th.col-header { 
-      background-color: var(--primary);
-      color: #ffffff;
-      padding: 12px 8px; 
-      vertical-align: middle;
-      font-weight: 700;
-      white-space: normal; 
-      min-width: 95px;
-      max-width: 120px;
-      line-height: 1.3;
-    }
+    /* Stats */
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 16px; }
+    .stat { background: var(--card-bg); border-radius: 12px; padding: 14px 16px; box-shadow: var(--shadow); }
+    .stat .num { font-size: 1.6rem; font-weight: 800; color: var(--primary); line-height: 1.1; }
+    .stat .lbl { font-size: .75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; margin-top: 4px; }
 
-    .pivot-table .grand-total { 
-      font-weight: 900; 
-      background-color: #cbd5e1; 
-      color: #0f172a !important;
+    /* Cards */
+    .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; align-items: start; }
+    .card { background: var(--card-bg); border-radius: 14px; box-shadow: var(--shadow); border: 1px solid var(--line); overflow: hidden; display: flex; flex-direction: column; }
+    .card-top { padding: 14px 16px 10px; display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+    .consumer-label { font-size: .68rem; text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); font-weight: 700; }
+    .consumer-no { font-size: 1.15rem; font-weight: 800; color: var(--text); word-break: break-all; }
+    .count-badge { background: var(--primary-soft); color: var(--primary); font-size: .72rem; font-weight: 700; padding: 4px 9px; border-radius: 999px; white-space: nowrap; }
+    .card-body { padding: 0 16px 12px; }
+    .pill { display: inline-block; font-size: .75rem; font-weight: 700; padding: 4px 10px; border-radius: 999px; margin-bottom: 10px; }
+    .pill.green { background: var(--green-bg); color: var(--green); }
+    .pill.red { background: var(--red-bg); color: var(--red); }
+    .pill.amber { background: var(--amber-bg); color: var(--amber); }
+    .pill.slate { background: var(--slate-bg); color: var(--slate); }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; margin-bottom: 10px; }
+    .kv .k { font-size: .68rem; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); font-weight: 700; }
+    .kv .v { font-size: .9rem; font-weight: 600; word-break: break-word; }
+    .remarks { background: #f8fafc; border-left: 3px solid var(--primary); padding: 8px 10px; border-radius: 6px; font-size: .85rem; line-height: 1.4; margin-bottom: 10px; color: #1e293b; }
+    .remarks small { display: block; color: var(--text-muted); font-weight: 700; font-size: .66rem; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 2px; }
+    .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .chip-link { font-size: .8rem; font-weight: 600; color: var(--primary); background: var(--primary-soft); padding: 6px 12px; border-radius: 8px; text-decoration: none; transition: .15s; }
+    .chip-link:hover { background: #c7d2fe; }
+    .card-foot { margin-top: auto; border-top: 1px solid var(--line); }
+    .hist-toggle { width: 100%; background: #f8fafc; border: none; padding: 10px 16px; font-size: .82rem; font-weight: 700; color: var(--primary); cursor: pointer; text-align: left; display: flex; justify-content: space-between; }
+    .hist-toggle:hover { background: #eef2ff; }
+    .history { display: none; padding: 6px 16px 14px; background: #f8fafc; }
+    .history.open { display: block; }
+    .hist-item { position: relative; padding: 10px 0 10px 18px; border-left: 2px solid #cbd5e1; margin-left: 5px; }
+    .hist-item::before { content: ""; position: absolute; left: -6px; top: 14px; width: 10px; height: 10px; border-radius: 50%; background: #fff; border: 2px solid var(--primary); }
+    .hist-time { font-size: .75rem; font-weight: 700; color: var(--text-muted); }
+    .hist-line { font-size: .85rem; margin-top: 4px; display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; }
+    .hist-line .pill { margin: 0; font-size: .7rem; padding: 3px 8px; }
+    .hist-rem { font-size: .82rem; color: #334155; margin-top: 4px; }
+    .hist-links { margin-top: 6px; display: flex; gap: 8px; }
+    .hist-links a { font-size: .78rem; font-weight: 600; color: var(--primary); text-decoration: none; }
+    .hist-links a:hover { text-decoration: underline; }
+    .empty { text-align: center; padding: 48px 16px; color: var(--text-muted); font-weight: 600; background: #fff; border-radius: 12px; box-shadow: var(--shadow); }
+    .more-wrap { text-align: center; margin: 22px 0 4px; }
+
+    /* Report */
+    .section-card { background: var(--card-bg); border-radius: 14px; box-shadow: var(--shadow); padding: 18px; margin-bottom: 20px; }
+    .section-card h2 { font-size: 1.05rem; color: var(--primary); margin-bottom: 12px; }
+    .table-container { overflow-x: auto; margin-bottom: 14px; }
+    .pivot-wrap { display: inline-block; background: #fff; padding: 16px; border-radius: 8px; }
+    .pivot-table { border-collapse: collapse; text-align: center; font-size: .9rem; border: 2px solid var(--border); }
+    .pivot-table th, .pivot-table td { border: 1px solid var(--border); padding: 8px 10px; }
+    .pivot-table td { font-weight: 800; font-size: 1.05rem; }
+    .pivot-table th.row-label { text-align: left; white-space: nowrap; font-weight: 800; background: #f1f5f9; color: var(--primary); min-width: 150px; }
+    .pivot-table th.col-header { background: var(--primary); color: #fff; padding: 12px 8px; vertical-align: middle; font-weight: 700; white-space: normal; min-width: 95px; max-width: 120px; line-height: 1.3; }
+    .pivot-table .grand-total { font-weight: 900; background: #cbd5e1; color: #0f172a !important; }
+    .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    @media (max-width: 480px) {
+      .cards { grid-template-columns: 1fr; }
+      .tabs { display: flex; }
+      .tab-btn { flex: 1; padding: 9px 8px; }
     }
-    
-    #statusMessage { margin-bottom: 16px; font-size: 0.9rem; color: var(--text-muted); font-weight: 600; }
   </style>
 </head>
 <body>
 
-<div class="container">
-  <header>
-    <h1>Field Data Portal</h1>
-  </header>
+<div class="app-header">
+  <div class="inner">
+    <div>
+      <h1>⚡ Field Data Portal</h1>
+      <p>Meter checking records &amp; team reports</p>
+    </div>
+    <div id="statusMessage">Loading data from Google Sheet...</div>
+  </div>
+</div>
 
+<div class="container main">
   <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('searchTab')">Search Records</button>
-    <button class="tab-btn" onclick="switchTab('reportTab')">Daily Pivot Report</button>
+    <button class="tab-btn active" data-tab="searchTab">Search Records</button>
+    <button class="tab-btn" data-tab="reportTab">Daily Pivot Report</button>
   </div>
 
-  <div id="statusMessage">Loading data from Google Sheet...</div>
-
-  <!-- TAB 1: SEARCH RECORDS -->
+  <!-- TAB 1: SEARCH RECORDS (cards) -->
   <div id="searchTab" class="tab-content active">
-    <div class="filter-box">
-      <input type="text" id="searchInput" class="filter-input" placeholder="Search Consumer, Meter, or Worker..." onkeyup="handleSearch()">
-      <button class="btn" onclick="handleSearch()">Search</button>
-      <button class="btn" style="background:#64748b" onclick="resetSearch()">Reset</button>
+    <div class="stats">
+      <div class="stat"><div class="num" id="statConsumers">0</div><div class="lbl">Consumers</div></div>
+      <div class="stat"><div class="num" id="statReports">0</div><div class="lbl">Total Reports</div></div>
+      <div class="stat"><div class="num" id="statRepeat">0</div><div class="lbl">Repeat Consumers</div></div>
     </div>
-    <div class="table-container">
-      <table class="search-table">
-        <thead>
-          <tr style="background: var(--primary); color: white;">
-            <th>Timestamp</th>
-            <th>Field Worker</th>
-            <th>Consumer No</th>
-            <th>Meter No</th>
-            <th>Reading</th>
-            <th>Tag</th>
-            <th>Original Remarks</th>
-            <th>Refined Remarks</th>
-            <th>Coordinates</th>
-            <th>Photo</th>
-          </tr>
-        </thead>
-        <tbody id="recordsTableBody"></tbody>
-      </table>
+
+    <div class="toolbar">
+      <input type="text" id="searchInput" class="field" placeholder="🔍 Search consumer, meter, worker, tag, remarks...">
+      <select id="tagFilter" class="field"><option value="">All tags</option></select>
+      <button class="btn btn-ghost" id="resetBtn">Reset</button>
+    </div>
+
+    <div id="cardsContainer" class="cards"></div>
+    <div class="more-wrap" id="moreWrap" style="display:none;">
+      <button class="btn btn-ghost" id="moreBtn">Load more</button>
     </div>
   </div>
 
   <!-- TAB 2: SUMMARY REPORT -->
   <div id="reportTab" class="tab-content">
-    <div class="filter-box">
-      <label style="font-weight: 600; color: var(--text-muted);">Filter Date:</label>
-      <input type="date" id="reportDate" class="filter-input" onchange="generateSummaryReport()">
-      <button class="btn" style="background:#64748b" onclick="document.getElementById('reportDate').value=''; generateSummaryReport();">Clear</button>
+    <div class="toolbar">
+      <label style="font-weight:600; color:var(--text-muted); font-size:.9rem;">Filter Date:</label>
+      <input type="date" id="reportDate" class="field" style="max-width:220px;">
+      <button class="btn btn-ghost" id="clearDateBtn">Clear</button>
+      <label class="check"><input type="checkbox" id="dedupeToggle" checked> Count each consumer once</label>
     </div>
 
-    <h2 style="font-size: 1.1rem; color: var(--primary); margin-bottom: 12px;">No-Comm Checking Report</h2>
-    <div class="table-container">
-      <div id="pivotTableContainerNoComm" class="pivot-wrap">
-        <table class="pivot-table" id="pivotTableNoComm">
-          <thead id="pivotHeadNoComm"></thead>
-          <tbody id="reportTableBodyNoComm"></tbody>
-        </table>
+    <div class="section-card">
+      <h2>No-Comm Checking Report</h2>
+      <div class="table-container">
+        <div id="pivotTableContainerNoComm" class="pivot-wrap">
+          <table class="pivot-table" id="pivotTableNoComm">
+            <thead id="pivotHeadNoComm"></thead>
+            <tbody id="reportTableBodyNoComm"></tbody>
+          </table>
+        </div>
       </div>
-    </div>
-    <div style="margin-bottom: 28px;">
-      <button class="btn btn-export" onclick="exportToCSV('pivotTableNoComm', 'NoComm')">📊 Export Excel</button>
-      <button class="btn" onclick="downloadScreenshot('pivotTableContainerNoComm', 'NoComm')">📸 Download Image</button>
+      <div class="btn-row">
+        <button class="btn btn-export" onclick="exportToCSV('pivotTableNoComm', 'NoComm')">📊 Export Excel</button>
+        <button class="btn" onclick="downloadScreenshot('pivotTableContainerNoComm', 'NoComm')">📸 Download Image</button>
+      </div>
     </div>
 
-    <h2 style="font-size: 1.1rem; color: var(--primary); margin-bottom: 12px;">Negative Balance Checking Report</h2>
-    <div class="table-container">
-      <div id="pivotTableContainerNegBalance" class="pivot-wrap">
-        <table class="pivot-table" id="pivotTableNegBalance">
-          <thead id="pivotHeadNegBalance"></thead>
-          <tbody id="reportTableBodyNegBalance"></tbody>
-        </table>
+    <div class="section-card">
+      <h2>Negative Balance Checking Report</h2>
+      <div class="table-container">
+        <div id="pivotTableContainerNegBalance" class="pivot-wrap">
+          <table class="pivot-table" id="pivotTableNegBalance">
+            <thead id="pivotHeadNegBalance"></thead>
+            <tbody id="reportTableBodyNegBalance"></tbody>
+          </table>
+        </div>
       </div>
-    </div>
-    <div>
-      <button class="btn btn-export" onclick="exportToCSV('pivotTableNegBalance', 'NegBalance')">📊 Export Excel</button>
-      <button class="btn" onclick="downloadScreenshot('pivotTableContainerNegBalance', 'NegBalance')">📸 Download Image</button>
+      <div class="btn-row">
+        <button class="btn btn-export" onclick="exportToCSV('pivotTableNegBalance', 'NegBalance')">📊 Export Excel</button>
+        <button class="btn" onclick="downloadScreenshot('pivotTableContainerNegBalance', 'NegBalance')">📸 Download Image</button>
+      </div>
     </div>
   </div>
 </div>
@@ -186,9 +206,12 @@
 <script>
   // --- CONFIGURATION ---
   const API_URL = "https://script.google.com/macros/s/AKfycbzk12YqqADRnNgKiRHRp0upCzsSjbsRHSz1e3ha4-zLyxD1x_giKw6SU2BplzlHxjA4/exec";
+  const PAGE_SIZE = 40;
   // ---------------------
 
-  let rawRecords = [];
+  let rawRecords = [];   // every row, with _ts / _idx added
+  let groups = [];       // one entry per consumer, sorted latest -> oldest
+  let visibleCount = PAGE_SIZE;
 
   const teamMapping = {
     "sofior rahman": "Abdul Monnaf",
@@ -208,7 +231,6 @@
     "dimbeswarbaishya": "Dimbeswar Baishya"
   };
 
-  // No-Comm Checking report: root causes found while chasing a non-communicating meter
   const noCommTagCategories = [
     "Meter working ok/Communication Issue",
     "Meter display error",
@@ -220,84 +242,34 @@
     "Smart meter not installed"
   ];
 
-  // Negative Balance Checking report: outcome of a suspicious-consumption / negative-balance check
   const negBalanceTagCategories = [
     "No malpractice found",
     "Meter bypass found"
   ];
 
+  // ---------- helpers ----------
+  const $ = id => document.getElementById(id);
+
+  function esc(v) {
+    return String(v ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+
   function getTeamLeader(workerName) {
     if (!workerName) return "Unknown";
-    const cleanName = workerName.trim().toLowerCase();
-    return teamMapping[cleanName] || workerName; 
+    const clean = workerName.trim().toLowerCase();
+    return teamMapping[clean] || workerName;
   }
 
-  // Smart Contrast Heatmap
-  function getHeatmapStyle(value) {
-    if (value === 0) return "background-color: transparent; color: inherit;";
-    if (value <= 2) return "background-color: #dbeafe; color: #1e3a8a;"; 
-    if (value <= 5) return "background-color: #93c5fd; color: #1e3a8a;"; 
-    if (value <= 9) return "background-color: #3b82f6; color: #ffffff;"; 
-    return "background-color: #1e40af; color: #ffffff;"; 
+  // Parses "15/09/2026 16:10:46" (dd/mm/yyyy) or ISO strings into a sortable number.
+  function parseTs(ts) {
+    if (!ts) return 0;
+    const s = String(ts).trim();
+    const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:[ T,]+(\d{1,2}):(\d{2})(?::(\d{2}))?)?/);
+    if (m) return new Date(+m[3], +m[2] - 1, +m[1], +(m[4] || 0), +(m[5] || 0), +(m[6] || 0)).getTime();
+    const d = new Date(s);
+    return isNaN(d) ? 0 : d.getTime();
   }
 
-  async function loadSheetData() {
-    const status = document.getElementById("statusMessage");
-    try {
-      const response = await fetch(API_URL);
-      rawRecords = await response.json();
-      status.textContent = `Loaded ${rawRecords.length} records successfully.`;
-      document.getElementById('reportDate').value = new Date().toISOString().split('T')[0];
-      
-      renderTable(rawRecords);
-      generateSummaryReport();
-    } catch (err) {
-      status.textContent = "Failed to load records. Check API URL and permissions.";
-      console.error(err);
-    }
-  }
-
-  function renderTable(data) {
-    const tbody = document.getElementById("recordsTableBody");
-    tbody.innerHTML = "";
-    if (!data || data.length === 0) return;
-
-    data.forEach(item => {
-      const tr = document.createElement("tr");
-      
-      // Extract Coordinates
-      const lat = item["Latitude"] || item["Lat"] || "";
-      const long = item["Longitude"] || item["Long"] || "";
-      const coords = (lat && lat !== "N/A" && long && long !== "N/A") 
-        ? `<a class="link-btn" target="_blank" href="https://maps.google.com/?q=${lat},${long}">${lat}, ${long}</a>` 
-        : "N/A";
-
-      // Extract Photo
-      const photoKey = Object.keys(item).find(k => /photo|image|link|url/i.test(k));
-      let photoUrl = (photoKey ? item[photoKey] : "").toString().trim();
-      if (photoUrl.startsWith("'")) photoUrl = photoUrl.substring(1);
-      const photoCell = (photoUrl.startsWith("http")) 
-        ? `<a class="link-btn" target="_blank" href="${photoUrl}">View Photo</a>` 
-        : (photoUrl || "N/A");
-
-      tr.innerHTML = `
-        <td>${item["Timestamp"] || ""}</td>
-        <td><strong>${item["Field Worker"] || "Unknown"}</strong></td>
-        <td>${item["Consumer No"] || "N/A"}</td>
-        <td>${item["Meter No"] || "N/A"}</td>
-        <td>${item["Reading"] || "N/A"}</td>
-        <td>${item["Tag"] || "N/A"}</td>
-        <td style="max-width:200px; white-space:normal;">${item["Remarks (Original)"] || item["Remarks"] || ""}</td>
-        <td style="max-width:200px; white-space:normal;">${item["Remarks (Refined)"] || ""}</td>
-        <td>${coords}</td>
-        <td>${photoCell}</td>
-      `;
-      tbody.appendChild(tr);
-    });
-  }
-
-  // Extracts just the date portion from a Timestamp value, whichever format it arrives in:
-  // "15/09/2026 16:10:46" (space-separated) or "2026-09-15T16:10:46.000Z" (ISO).
   function extractDatePart(timestamp) {
     if (!timestamp) return "";
     if (timestamp.includes(" ")) return timestamp.split(" ")[0];
@@ -305,65 +277,254 @@
     return timestamp;
   }
 
-  // Builds one pivot table (header + body) for a given set of tag categories.
-  // rowLabel is the header text for the leftmost column.
+  function validConsumer(v) {
+    const s = String(v ?? "").trim();
+    return s && s.toUpperCase() !== "N/A" ? s : "";
+  }
+
+  function tagClass(tag) {
+    const t = (tag || "").toLowerCase();
+    if (!t) return "slate";
+    if (t.includes("no malpractice") || t.includes("working ok")) return "green";
+    if (t.includes("bypass") || t.includes("burnt") || t.includes("faulty")) return "red";
+    return "amber";
+  }
+
+  function getPhotoUrl(item) {
+    const key = Object.keys(item).find(k => /photo|image|link|url/i.test(k));
+    let url = (key ? item[key] : "").toString().trim();
+    if (url.startsWith("'")) url = url.substring(1);
+    return url.startsWith("http") ? url : "";
+  }
+
+  function getMapUrl(item) {
+    const lat = item["Latitude"] || item["Lat"] || "";
+    const long = item["Longitude"] || item["Long"] || "";
+    if (lat && lat !== "N/A" && long && long !== "N/A") return `https://maps.google.com/?q=${encodeURIComponent(lat)},${encodeURIComponent(long)}`;
+    return "";
+  }
+
+  function getHeatmapStyle(value) {
+    if (value === 0) return "background-color: transparent; color: inherit;";
+    if (value <= 2) return "background-color: #dbeafe; color: #1e3a8a;";
+    if (value <= 5) return "background-color: #93c5fd; color: #1e3a8a;";
+    if (value <= 9) return "background-color: #3b82f6; color: #ffffff;";
+    return "background-color: #1e40af; color: #ffffff;";
+  }
+
+  // Latest first; for identical timestamps, the row lower in the sheet (added later) wins.
+  const newestFirst = (a, b) => (b._ts - a._ts) || (b._idx - a._idx);
+
+  // ---------- data ----------
+  async function loadSheetData() {
+    const status = $("statusMessage");
+    try {
+      const response = await fetch(API_URL);
+      const data = await response.json();
+      rawRecords = data.map((r, i) => Object.assign({}, r, { _ts: parseTs(r["Timestamp"]), _idx: i }));
+      $("reportDate").value = new Date().toISOString().split("T")[0];
+
+      buildGroups();
+      populateTagFilter();
+      applyFilters();
+      generateSummaryReport();
+
+      status.textContent = `${rawRecords.length} reports • ${groups.length} consumers`;
+    } catch (err) {
+      status.textContent = "Failed to load records. Check API URL and permissions.";
+      console.error(err);
+    }
+  }
+
+  // Merge all reports of the same consumer into one group, newest report first.
+  function buildGroups() {
+    const map = new Map();
+    rawRecords.forEach(r => {
+      const c = validConsumer(r["Consumer No"]);
+      const key = c ? "c:" + c.toLowerCase() : "row:" + r._idx; // rows without a consumer no. are never merged
+      if (!map.has(key)) map.set(key, { consumer: c, records: [] });
+      map.get(key).records.push(r);
+    });
+    groups = [...map.values()];
+    groups.forEach(g => g.records.sort(newestFirst));
+    groups.sort((a, b) => newestFirst(a.records[0], b.records[0]));
+  }
+
+  function populateTagFilter() {
+    const tags = [...new Set(rawRecords.map(r => (r["Tag"] || "").trim()).filter(Boolean))].sort();
+    const sel = $("tagFilter");
+    sel.innerHTML = `<option value="">All tags</option>` + tags.map(t => `<option value="${esc(t)}">${esc(t)}</option>`).join("");
+  }
+
+  // ---------- search cards ----------
+  function applyFilters(keepPage) {
+    if (!keepPage) visibleCount = PAGE_SIZE;
+    const q = $("searchInput").value.trim().toLowerCase();
+    const tag = $("tagFilter").value.toLowerCase();
+
+    const filtered = groups.filter(g => {
+      if (tag && !g.records.some(r => (r["Tag"] || "").trim().toLowerCase() === tag)) return false;
+      if (!q) return true;
+      return g.records.some(r => Object.entries(r).some(([k, v]) => !k.startsWith("_") && String(v).toLowerCase().includes(q)));
+    });
+
+    renderStats(filtered);
+    renderCards(filtered);
+  }
+
+  function renderStats(list) {
+    const reports = list.reduce((n, g) => n + g.records.length, 0);
+    $("statConsumers").textContent = list.length;
+    $("statReports").textContent = reports;
+    $("statRepeat").textContent = list.filter(g => g.records.length > 1).length;
+  }
+
+  function renderCards(list) {
+    const box = $("cardsContainer");
+    if (!list.length) {
+      box.innerHTML = "";
+      box.insertAdjacentHTML("beforeend", `<div class="empty" style="grid-column:1/-1;">No records found.</div>`);
+      $("moreWrap").style.display = "none";
+      return;
+    }
+
+    const shown = list.slice(0, visibleCount);
+    box.innerHTML = shown.map((g, i) => cardHtml(g, i)).join("");
+
+    const remaining = list.length - shown.length;
+    $("moreWrap").style.display = remaining > 0 ? "block" : "none";
+    $("moreBtn").textContent = `Load more (${remaining} remaining)`;
+  }
+
+  function cardHtml(g, i) {
+    const r = g.records[0];
+    const older = g.records.slice(1);
+    const tag = (r["Tag"] || "").trim();
+    const worker = r["Field Worker"] || "Unknown";
+    const leader = getTeamLeader(worker);
+    const orig = r["Remarks (Original)"] || r["Remarks"] || "";
+    const refined = r["Remarks (Refined)"] || "";
+    const map = getMapUrl(r);
+    const photo = getPhotoUrl(r);
+
+    return `
+      <div class="card">
+        <div class="card-top">
+          <div>
+            <div class="consumer-label">Consumer No</div>
+            <div class="consumer-no">${esc(g.consumer || "N/A")}</div>
+          </div>
+          <span class="count-badge">${g.records.length} report${g.records.length > 1 ? "s" : ""}</span>
+        </div>
+        <div class="card-body">
+          <span class="pill ${tagClass(tag)}">${esc(tag || "No tag")}</span>
+          <div class="grid2">
+            <div class="kv"><div class="k">Meter No</div><div class="v">${esc(r["Meter No"] || "N/A")}</div></div>
+            <div class="kv"><div class="k">Reading</div><div class="v">${esc(r["Reading"] || "N/A")}</div></div>
+            <div class="kv"><div class="k">Field Worker</div><div class="v">${esc(worker)}</div></div>
+            <div class="kv"><div class="k">Team Leader</div><div class="v">${esc(leader)}</div></div>
+            <div class="kv" style="grid-column:1/-1;"><div class="k">Latest Report</div><div class="v">${esc(r["Timestamp"] || "")}</div></div>
+          </div>
+          ${refined ? `<div class="remarks"><small>Refined remarks</small>${esc(refined)}</div>` : ""}
+          ${orig ? `<div class="remarks" style="border-left-color:#94a3b8;"><small>Original remarks</small>${esc(orig)}</div>` : ""}
+          <div class="actions">
+            ${map ? `<a class="chip-link" target="_blank" rel="noopener" href="${map}">📍 Location</a>` : ""}
+            ${photo ? `<a class="chip-link" target="_blank" rel="noopener" href="${esc(photo)}">🖼 Photo</a>` : ""}
+          </div>
+        </div>
+        ${older.length ? `
+        <div class="card-foot">
+          <button class="hist-toggle" data-target="hist-${i}"><span>Previous reports (${older.length})</span><span>▾</span></button>
+          <div class="history" id="hist-${i}">${older.map(historyItemHtml).join("")}</div>
+        </div>` : ""}
+      </div>`;
+  }
+
+  function historyItemHtml(r) {
+    const tag = (r["Tag"] || "").trim();
+    const orig = r["Remarks (Refined)"] || r["Remarks (Original)"] || r["Remarks"] || "";
+    const map = getMapUrl(r);
+    const photo = getPhotoUrl(r);
+    return `
+      <div class="hist-item">
+        <div class="hist-time">${esc(r["Timestamp"] || "")}</div>
+        <div class="hist-line">
+          <span class="pill ${tagClass(tag)}">${esc(tag || "No tag")}</span>
+          <span>👷 ${esc(r["Field Worker"] || "Unknown")}</span>
+          <span>Meter ${esc(r["Meter No"] || "N/A")}</span>
+          <span>Reading ${esc(r["Reading"] || "N/A")}</span>
+        </div>
+        ${orig ? `<div class="hist-rem">${esc(orig)}</div>` : ""}
+        ${(map || photo) ? `<div class="hist-links">
+          ${map ? `<a target="_blank" rel="noopener" href="${map}">📍 Location</a>` : ""}
+          ${photo ? `<a target="_blank" rel="noopener" href="${esc(photo)}">🖼 Photo</a>` : ""}
+        </div>` : ""}
+      </div>`;
+  }
+
+  // ---------- pivot report ----------
   function buildPivotTable(headId, bodyId, categories, rowLabel) {
-    const thead = document.getElementById(headId);
-    const tbody = document.getElementById(bodyId);
+    const thead = $(headId);
+    const tbody = $(bodyId);
     thead.innerHTML = "";
     tbody.innerHTML = "";
 
-    // Header row, built from the categories array so it never drifts out of sync with the data
-    let headHtml = `<tr><th class="row-label" style="text-align: center; font-size: 1rem; color: var(--primary);">${rowLabel}</th>`;
-    categories.forEach(cat => headHtml += `<th class="col-header">${cat}</th>`);
-    headHtml += `<th class="col-header grand-total" style="background-color: #94a3b8; color: #0f172a;">Grand Total</th></tr>`;
+    let headHtml = `<tr><th class="row-label" style="text-align:center; font-size:1rem; color:var(--primary);">${esc(rowLabel)}</th>`;
+    categories.forEach(cat => headHtml += `<th class="col-header">${esc(cat)}</th>`);
+    headHtml += `<th class="col-header grand-total" style="background-color:#94a3b8; color:#0f172a;">Grand Total</th></tr>`;
     thead.innerHTML = headHtml;
 
-    const filterDate = document.getElementById("reportDate").value;
+    const filterDate = $("reportDate").value;
+    const dedupe = $("dedupeToggle").checked;
+
+    // rows that fall in the chosen date and belong to this report, newest first
+    let rows = rawRecords
+      .filter(row => {
+        if (filterDate && extractDatePart(row["Timestamp"] || "") !== filterDate) return false;
+        const tag = (row["Tag"] || "").trim().toLowerCase();
+        return categories.some(cat => cat.toLowerCase() === tag);
+      })
+      .sort(newestFirst);
+
+    // keep only the latest report per consumer
+    if (dedupe) {
+      const seen = new Set();
+      rows = rows.filter(row => {
+        const c = validConsumer(row["Consumer No"]);
+        if (!c) return true;
+        const k = c.toLowerCase();
+        if (seen.has(k)) return false;
+        seen.add(k);
+        return true;
+      });
+    }
+
     const summary = {};
     const columnTotals = new Array(categories.length).fill(0);
     let absoluteGrandTotal = 0;
 
-    rawRecords.forEach(row => {
-      const rowDate = extractDatePart(row["Timestamp"] || "");
-      if (filterDate && rowDate !== filterDate) return;
-
-      const tag = (row["Tag"] || "").trim();
-      const matchedCategory = categories.find(cat => cat.toLowerCase() === tag.toLowerCase());
-      if (!matchedCategory) return; // this row doesn't belong to this report at all
-
-      const rawWorker = row["Field Worker"] || "Unknown";
-      const leader = getTeamLeader(rawWorker);
-
+    rows.forEach(row => {
+      const tag = (row["Tag"] || "").trim().toLowerCase();
+      const matched = categories.find(cat => cat.toLowerCase() === tag);
+      const leader = getTeamLeader(row["Field Worker"] || "Unknown");
       if (!summary[leader]) {
-        summary[leader] = {};
+        summary[leader] = { name: leader, total: 0 };
         categories.forEach(cat => summary[leader][cat] = 0);
-        summary[leader].total = 0;
-        summary[leader].name = leader;
       }
-
-      summary[leader][matchedCategory] += 1;
+      summary[leader][matched] += 1;
       summary[leader].total += 1;
     });
 
-    const sortedLeaders = Object.values(summary).sort((a, b) => b.total - a.total);
-
-    sortedLeaders.forEach(data => {
-      if (data.total === 0) return;
-
+    Object.values(summary).sort((a, b) => b.total - a.total).forEach(data => {
       const tr = document.createElement("tr");
-      let rowHtml = `<th class="row-label">${data.name}</th>`;
-
+      let rowHtml = `<th class="row-label">${esc(data.name)}</th>`;
       categories.forEach((cat, index) => {
         const count = data[cat];
         columnTotals[index] += count;
-        const style = getHeatmapStyle(count);
-        rowHtml += `<td style="${style}">${count > 0 ? count : ""}</td>`;
+        rowHtml += `<td style="${getHeatmapStyle(count)}">${count > 0 ? count : ""}</td>`;
       });
-
       absoluteGrandTotal += data.total;
       rowHtml += `<td class="grand-total">${data.total}</td>`;
-
       tr.innerHTML = rowHtml;
       tbody.appendChild(tr);
     });
@@ -371,15 +532,12 @@
     if (absoluteGrandTotal > 0) {
       const footerTr = document.createElement("tr");
       let footerHtml = `<th class="row-label grand-total">Grand Total</th>`;
-      columnTotals.forEach(total => {
-        footerHtml += `<td class="grand-total">${total > 0 ? total : ""}</td>`;
-      });
+      columnTotals.forEach(total => footerHtml += `<td class="grand-total">${total > 0 ? total : ""}</td>`);
       footerHtml += `<td class="grand-total">${absoluteGrandTotal}</td>`;
       footerTr.innerHTML = footerHtml;
       tbody.appendChild(footerTr);
     } else {
-      const colspan = categories.length + 2;
-      tbody.innerHTML = `<tr><td colspan="${colspan}" style="text-align:center; padding: 20px;">No data for this date.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="${categories.length + 2}" style="text-align:center; padding:20px; font-size:.95rem;">No data for this date.</td></tr>`;
     }
   }
 
@@ -389,63 +547,60 @@
   }
 
   function exportToCSV(tableId, label) {
-    let table = document.getElementById(tableId);
-    let rows = table.querySelectorAll("tr");
-    let csv = [];
-    
-    for (let i = 0; i < rows.length; i++) {
-      let row = [], cols = rows[i].querySelectorAll("td, th");
-      for (let j = 0; j < cols.length; j++) {
-         let data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, " ").trim();
-         row.push('"' + data + '"');
-      }
+    const rows = $(tableId).querySelectorAll("tr");
+    const csv = [];
+    rows.forEach(tr => {
+      const row = [];
+      tr.querySelectorAll("td, th").forEach(c => row.push('"' + c.innerText.replace(/(\r\n|\n|\r)/gm, " ").trim().replace(/"/g, '""') + '"'));
       csv.push(row.join(","));
-    }
-    
-    let csvFile = new Blob([csv.join("\n")], {type: "text/csv"});
-    let a = document.createElement("a");
-    a.download = `${label}_Pivot_Report_${document.getElementById("reportDate").value || 'All_Time'}.csv`;
-    a.href = window.URL.createObjectURL(csvFile);
+    });
+    const a = document.createElement("a");
+    a.download = `${label}_Pivot_Report_${$("reportDate").value || "All_Time"}.csv`;
+    a.href = URL.createObjectURL(new Blob([csv.join("\n")], { type: "text/csv" }));
     a.click();
   }
 
   function downloadScreenshot(containerId, label) {
-    const tableContainer = document.getElementById(containerId);
-    
-    html2canvas(tableContainer, { 
-      backgroundColor: "#ffffff",
-      scale: 2 
-    }).then(canvas => {
-      let a = document.createElement("a");
-      a.download = `${label}_Report_Snap_${document.getElementById("reportDate").value || 'All_Time'}.png`;
+    html2canvas($(containerId), { backgroundColor: "#ffffff", scale: 2 }).then(canvas => {
+      const a = document.createElement("a");
+      a.download = `${label}_Report_Snap_${$("reportDate").value || "All_Time"}.png`;
       a.href = canvas.toDataURL("image/png");
       a.click();
     });
   }
 
-  function handleSearch() {
-    const query = document.getElementById("searchInput").value.trim().toLowerCase();
-    if (!query) { renderTable(rawRecords); return; }
-    const filtered = rawRecords.filter(item => {
-      return Object.values(item).some(val => String(val).toLowerCase().includes(query));
-    });
-    renderTable(filtered);
-  }
-
-  function resetSearch() {
-    document.getElementById("searchInput").value = "";
-    renderTable(rawRecords);
-  }
-
+  // ---------- events ----------
   function switchTab(tabId) {
     document.querySelectorAll(".tab-content").forEach(el => el.classList.remove("active"));
-    document.querySelectorAll(".tab-btn").forEach(el => el.classList.remove("active"));
-    document.getElementById(tabId).classList.add("active");
-    event.target.classList.add("active");
-    if(tabId === 'reportTab') generateSummaryReport();
+    document.querySelectorAll(".tab-btn").forEach(el => el.classList.toggle("active", el.dataset.tab === tabId));
+    $(tabId).classList.add("active");
+    if (tabId === "reportTab") generateSummaryReport();
   }
 
-  window.addEventListener("DOMContentLoaded", loadSheetData);
+  let searchTimer;
+  window.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll(".tab-btn").forEach(b => b.addEventListener("click", () => switchTab(b.dataset.tab)));
+
+    $("searchInput").addEventListener("input", () => { clearTimeout(searchTimer); searchTimer = setTimeout(() => applyFilters(), 200); });
+    $("tagFilter").addEventListener("change", () => applyFilters());
+    $("resetBtn").addEventListener("click", () => { $("searchInput").value = ""; $("tagFilter").value = ""; applyFilters(); });
+    $("moreBtn").addEventListener("click", () => { visibleCount += PAGE_SIZE; applyFilters(true); });
+
+    $("reportDate").addEventListener("change", generateSummaryReport);
+    $("dedupeToggle").addEventListener("change", generateSummaryReport);
+    $("clearDateBtn").addEventListener("click", () => { $("reportDate").value = ""; generateSummaryReport(); });
+
+    // expand / collapse previous reports
+    $("cardsContainer").addEventListener("click", e => {
+      const btn = e.target.closest(".hist-toggle");
+      if (!btn) return;
+      const panel = $(btn.dataset.target);
+      const open = panel.classList.toggle("open");
+      btn.lastElementChild.textContent = open ? "▴" : "▾";
+    });
+
+    loadSheetData();
+  });
 </script>
 
 </body>
